@@ -1,0 +1,10 @@
+# Git Ignore
+# git ls-files --others --exclude-from=.git/info/exclude
+# Lines that start with '#' are comments.
+
+# MPLAB X Project specific folders and files to ignore
+[Bb]uild/
+dist/
+nbproject/private
+nbproject/Makefile-*
+nbproject/Package-*
