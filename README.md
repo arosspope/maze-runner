@@ -6,7 +6,3 @@ TODO:
 
 Style Guide:
 + 2 space indentation
-
-Jai
-
-Andrew Pope
