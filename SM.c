@@ -45,7 +45,8 @@ int SM_Move(unsigned int steps, TDIRECTION dir) {
     __delay_ms(10);
   }
   
-  SPI_SendData(0); //Disable the SM module
+  SPI_SendData(0);          //Disable the SM module
+  SPI_SelectMode(SPI_NONE); //Set SPI to reference no module
 
   return stepCount;
 }
