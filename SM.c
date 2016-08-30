@@ -42,6 +42,7 @@ int SM_Move(unsigned int steps, TDIRECTION dir) {
   for (; steps != 0; --steps){
     //Pulse the Stepper motor the desired amount of steps
     RC2 = 1; NOP(); RC2 = 0;
+    __delay_ms(10);
   }
   
   SPI_SendData(0); //Disable the SM module
