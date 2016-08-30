@@ -10,12 +10,12 @@
 #include "LCD.h"
 #include "ADC.h"
 
-#define ADC_ADRESH_MASK 0b00000011
-
 bool ADC_Init(void) {
   //Clear PORTA and Set to Input
   PORTA = 0;
-  TRISA = 0b11111111;
+  TRISAbits.TRISA0 = 1; //Input - Short Range IR
+  TRISAbits.TRISA1 = 1; //Input - Long Range IR
+  TRISAbits.TRISA3 = 0; //Output - +Vref (@4.09v)
 
   ADCON1bits.ADCS2 = 0; //Clock: Fosc/32
   ADCON0bits.ADCS1 = 1;
@@ -49,4 +49,3 @@ unsigned int ADC_GetVal(void) {
   adcRAW = (ADRESL + (ADRESH * 256));
   return (adcRAW);
 }
-

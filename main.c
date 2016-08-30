@@ -15,6 +15,8 @@
 #include "SM.h"
 #include "IR.h"
 #include "BNT.h"
+#include "USART.h"
+#include "SPI.h"
 #include "types.h"
 
 #pragma config BOREN = OFF, CPD = OFF, WRT = OFF, FOSC = HS, WDTE = OFF, CP = OFF, LVP = OFF, PWRTE = OFF
@@ -26,21 +28,24 @@ bool IR_FLAG = false;           //Used to signal the main loop when to perform a
 
 /* Callback functions for each button within the system */
 void b1CB(void) {
-  SM_Move(1, DIR_CCW);
+  LCD_Print(SM_Move(1, DIR_CCW), BM_LEFT);
 }
 
 void b2CB(void) {
-  SM_Move(1, DIR_CW);
+  LCD_Print(SM_Move(1, DIR_CW), BM_LEFT);
 }
 
 void b3CB(void) {
+  //Move the motor and print step count to LCD
   static TDIRECTION currentDirecton = DIR_CW;
-  SM_Move(50, currentDirecton); //3.6degs of resolution, (3.6x50 = 180)
+  LCD_Print(SM_Move(50, currentDirecton), BM_LEFT); //3.6degs of resolution, (3.6x50 = 180)
   currentDirecton = !currentDirecton; //Toggle the rotational direction
 }
 
 void b4CB(void) {
-  LED_1 = !LED_1; //Toggle LED
+  //TODO: TEST - Send opcodes to the irobot
+  USART_OutChar(128); //send IROBOT START OPCODE
+  USART_OutChar(132); //Activate FULL MODE
 }
 
 /* The list of all buttons in the system */
@@ -126,18 +131,22 @@ bool timerInit(void) {
 void main(void) {
   unsigned int i;
 
-  if (LED_Init() && SM_Init() && IR_Init() && LCD_Init() && BNT_Init() && timerInit() && USART_Init()) {
+  if (LED_Init() && SM_Init() && IR_Init() && LCD_Init() && BNT_Init()
+      && timerInit() && USART_Init() && SPI_Init())
+  {
     LCD_Init(); /* Note: LCD_Init() must be called again, as on a power reset
                  * the module does not initialise correctly due to weird timing issues
                  * and state of registers.
                  */
-    ei(); //Globally Enable system wide interrupts
-    SM_Move(0, DIR_CW); //Move stepper motor 0 steps to initially display STEP_COUNT
+    ei();                                   //Globally Enable system wide interrupts
+    LCD_Print(SM_Move(0, DIR_CW), BM_LEFT); //Move stepper motor 0 steps to initially display STEP_COUNT
 
     while (1)
     {
+      //TODO: USART_Poll() currently not required
+
       if (IR_FLAG) {
-        IR_Measure(); //Perform an IR measurement
+        LCD_Print((int) IR_Measure(), TOP_RIGHT); //Perform an IR measurement and print to LCD
         IR_FLAG = false;
       }
 

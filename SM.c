@@ -4,68 +4,46 @@
  *
  *  This contains the functions for operating the Stepper Motor.
  *
- *  @author Andrew Pope (sn: 11655949)
+ *  @author Andrew.P 
  *  @date 02-08-2016
  */
-#include <pic.h>
-#include <xc.h>
-#include "LCD.h"
 #include "SM.h"
+#include "SPI.h"
 
-/* Definition of required energising to achieve different 'steps' */
-#define STEP0 0b00111100
-#define STEP1 0b00101110
-#define STEP2 0b00101011
-#define STEP3 0b00100111
-#define STEP4 0b00110101
-#define STEP5 0b00010111
-#define STEP6 0b00011011
-#define STEP7 0b00011110
-#define OFF   0b00111001
-
-signed int STEP_COUNT = 0;
+/* Masks to construct control byte for the SPI module */
+#define CLK_PIC_MASK 0b00001000
+#define ENABLE_MASK  0b00000001
+#define H_STEP_MASK  0b00000100 //Half-step
+#define F_STEP_MASK  0b00000000 //Full-step
 
 bool SM_Init(void) {
-  TRISC = 0b00000000; //Set PORTC to all outputs
-  PORTC = STEP0;      //Energise stepper motor to a known winding (STEP 0)
-
-  return true;
+  return true; //TODO: Determine if SM is the only module to use SPI, if so - initialise here
 }
 
-void SM_Move(unsigned int steps, TDIRECTION dir) {
-  static unsigned int currentStep = 0; //Init currentStep to 0 (STEP 0)
+int SM_Move(unsigned int steps, TDIRECTION dir) {
+  static unsigned int stepCount = 0;
+  uint8_t controlByte = 0;
+
+  //Select the stepper motor module via SPI
+  SPI_SelectMode(SPI_SM);
+
+  //Enable and Construct the control byte for the SPI module and send
+  controlByte = (ENABLE_MASK | CLK_PIC_MASK | H_STEP_MASK | dir);
+  SPI_SendData(controlByte);
+
+  for (; steps != 0; --steps){
+    //Pulse the Stepper motor the desired amount of steps
+    RC2 = 1; NOP(); RC2 = 0;
+  }
+  
+  SPI_SendData(0); //Disable the SM module
 
   //Update the total step count
   if (dir == DIR_CCW) {
-    STEP_COUNT += steps; //Increment count for CCW rotation
+    stepCount += steps; //Increment count for CCW rotation
   } else {
-    STEP_COUNT -= steps; //Decrement for CW rotation
+    stepCount -= steps; //Decrement for CW rotation
   }
 
-  for (; steps != 0; --steps) {
-    //Increment or decrement step depending on direction
-    switch (dir) {
-      case DIR_CCW: currentStep = (currentStep + 1) % 8;
-        break;
-      case DIR_CW: currentStep = (currentStep - 1) % 8;
-        break;
-    }
-
-    switch (currentStep) {
-      case 0: PORTC = STEP0; break;
-      case 1: PORTC = STEP1; break;
-      case 2: PORTC = STEP2; break;
-      case 3: PORTC = STEP3; break;
-      case 4: PORTC = STEP4; break;
-      case 5: PORTC = STEP5; break;
-      case 6: PORTC = STEP6; break;
-      case 7: PORTC = STEP7; break;
-      default:PORTC = OFF; break; //De-energise windings.
-    }
-
-    __delay_ms(10); //10ms delay between energising
-    PORTC = OFF;
-  }
-
-  LCD_Print(STEP_COUNT, BM_LEFT); //Update the step count on the LCD
+  return stepCount;
 }
