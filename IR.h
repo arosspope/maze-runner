@@ -24,9 +24,10 @@ bool IR_Init(void);
 
 /*! @brief The IR sensor will perform a distance measurement
  *
+ *  @return distance - Returns the measured distance in mm
  *  @note Assumes that LCD_Init has been called.
  */
-void IR_Measure(void);
+double IR_Measure(void);
 #ifdef	__cplusplus
 }
 #endif

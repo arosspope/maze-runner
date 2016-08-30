@@ -25,7 +25,7 @@ double calcDistance(double ADCdata) {
   return round(distance);
 }
 
-void IR_Measure(void) {
+double IR_Measure(void) {
   double data = 0;
 
   /* Get 20 samples from the ADC module and find the average */
@@ -34,6 +34,5 @@ void IR_Measure(void) {
   }
   data = (data / 20);
 
-  LCD_Print((int) data, TOP_LEFT); //Update the LCD Screen
-  LCD_Print((int) calcDistance(data), TOP_RIGHT); //Print the actual distance in mm
+  return calcDistance(data);  //Returns the converted ADC value to distance in mm
 }
