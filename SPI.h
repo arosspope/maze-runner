@@ -22,7 +22,7 @@ extern "C" {
 typedef enum {
   SPI_NONE = 0,
   SPI_EEPROM = 2,
-  SPI_SM = 4
+  SPI_SM = 3
 }TSPI_MODE;
 
 /*!@brief Sets up the SPI interface before first use.
