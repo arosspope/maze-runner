@@ -23,7 +23,7 @@
 #define TMR0_VAL 100
 #define IR_DELAY           1000 //IR Distance measurement delay of 1s
 #define DEBOUNCE_DELAY     5    //Debounce delay of 5ms
-#define HEARTBEAT_DELAY    500  //Heartbeat of 500ms
+#define HEARTBEAT_DELAY    250  //Heartbeat of 500ms
 bool IR_FLAG = false;           //Used to signal the main loop when to perform a distance measurement
 
 /* Callback functions for each button within the system */
