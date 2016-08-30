@@ -31,12 +31,6 @@ int SM_Move(unsigned int steps, TDIRECTION dir) {
   controlByte = (ENABLE_MASK | CLK_PIC_MASK | H_STEP_MASK | dir);
   SPI_SendData(controlByte);
 
-  for (; steps != 0; --steps){
-    //Pulse the Stepper motor the desired amount of steps
-    RC2 = 1; NOP(); RC2 = 0;
-  }
-  
-  SPI_SendData(0); //Disable the SM module
 
   //Update the total step count
   if (dir == DIR_CCW) {
@@ -44,6 +38,13 @@ int SM_Move(unsigned int steps, TDIRECTION dir) {
   } else {
     stepCount -= steps; //Decrement for CW rotation
   }
+  
+  for (; steps != 0; --steps){
+    //Pulse the Stepper motor the desired amount of steps
+    RC2 = 1; NOP(); RC2 = 0;
+  }
+  
+  SPI_SendData(0); //Disable the SM module
 
   return stepCount;
 }
