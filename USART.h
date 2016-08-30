@@ -23,17 +23,17 @@ extern "C" {
  */
 bool USART_Init(void);
  
-/*! @brief Get a character from the receive FIFO if it is not empty.
+/*! @brief Get a character from the RCREG.
  *
  *  @param dataPtr A pointer to memory to store the retrieved byte.
- *  @return bool - TRUE if the receive FIFO returned a character.
+ *  @return bool - TRUE if successfull.
  */
 bool USART_InChar(uint8_t * const dataPtr);
  
-/*! @brief Put a byte in the transmit FIFO if it is not full.
+/*! @brief Attempt to transmit a character through TXREG.
  *
- *  @param data The byte to be placed in the transmit FIFO.
- *  @return bool - TRUE if the data was placed in the transmit FIFO.
+ *  @param data The byte to be transmitted.
+ *  @return bool - TRUE if if successfull.
  */
 bool USART_OutChar(const uint8_t data);
 

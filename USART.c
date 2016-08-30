@@ -36,7 +36,7 @@ bool USART_Init(void)
   PIE1bits.RCIE = 0;  //Receive interrupt disabled
   PIE1bits.TXIE = 0;  //Transmit interrupt disabled
   
-  //Init the FIFOs
+  //TODO: Init the FIFOs??
   FIFO_Init(&TxFIFO);
   FIFO_Init(&RxFIFO);
   
@@ -45,12 +45,20 @@ bool USART_Init(void)
 
 bool USART_InChar(uint8_t * const dataPtr)
 {
-  return (FIFO_Get(&RxFIFO, dataPtr));  //Attempt to get data from the receive fifo
+  //TODO: Slightly inefficent to sit here polling - may need to use interrupts
+  while(!PIR1bits.RCIF);  //Wait until data is availalbe
+  *dataPtr = RCREG;       //Read the register
+
+  return true;
 }
  
 bool USART_OutChar(const uint8_t data)
 {
-  return (FIFO_Put(&TxFIFO, data));     //Attempt to put data into the transmit fifo
+  //TODO: Slightly inefficent to sit here polling - may need to use interrupts
+  while(!TXSTAbits.TRMT); //Wait until the buffer becmoes empty
+  TXREG = data;           //Load register with data to transmit
+
+  return true;
 }
 
 void USART_Poll(void)
@@ -68,7 +76,7 @@ void USART_Poll(void)
   {
     if (FIFO_Get(&TxFIFO, &tempData)) //Attempt to get data from the transmit fifo
     {
-      RCREG = tempData;
+      TXREG = tempData;
     }
   }
 }
