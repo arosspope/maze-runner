@@ -21,7 +21,7 @@ bool SM_Init(void) {
 }
 
 int SM_Move(unsigned int steps, TDIRECTION dir) {
-  static unsigned int stepCount = 0;
+  static int stepCount = 0;
   uint8_t controlByte = 0;
 
   //Select the stepper motor module via SPI
