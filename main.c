@@ -37,8 +37,8 @@ void b2CB(void) {
 
 void b3CB(void) {
   //Move the motor and print step count to LCD
-  static TDIRECTION currentDirecton = DIR_CW;
-  LCD_Print(SM_Move(50, currentDirecton), BM_LEFT); //3.6degs of resolution, (3.6x50 = 180)
+  static TDIRECTION currentDirection = DIR_CW;
+  LCD_Print(SM_Move(50, currentDirection), BM_LEFT); //3.6degs of resolution, (3.6x50 = 180)
 
   //Toggle the rotational direction
   if (currentDirection == DIR_CW){
