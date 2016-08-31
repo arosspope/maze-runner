@@ -22,11 +22,11 @@ double calcDistance(double ADCdata) {
    */
   double dist_cm; 
   
-  if( ADCdata >= 398 && ADCdata < 516 ){
+  if( ADCdata >= 398 && ADCdata < 516 ){  //20-30
     dist_cm = ((ADCdata-749)/-11.7); 
   } 
-  else if ( ADCdata >= 304 && ADCdata < 398 ){ 
-    dist_cm = ((ADCdata-680/-9.4));
+  else if ( ADCdata >= 304 && ADCdata < 398 ){ //30-40
+    dist_cm = ((ADCdata-680)/-9.4);
   }
   else if ( ADCdata >= 244 && ADCdata < 304 ){
     dist_cm = ((ADCdata-544)/-6);

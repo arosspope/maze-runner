@@ -7,7 +7,6 @@
  *  @author Andrew Pope (sn: 11655949)
  *  @date 02-08-2016
  */
-#include "LCD.h"
 #include "ADC.h"
 
 bool ADC_Init(void) {

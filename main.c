@@ -23,19 +23,22 @@
 #define TMR0_VAL 100
 #define IR_DELAY           1000 //IR Distance measurement delay of 1s
 #define DEBOUNCE_DELAY     5    //Debounce delay of 5ms
-#define HEARTBEAT_DELAY    250  //Heartbeat of 500ms
+#define HEARTBEAT_DELAY    500  //Heartbeat of 500ms
 bool IR_FLAG = false;           //Used to signal the main loop when to perform a distance measurement
 
 /* Callback functions for each button within the system */
 void b1CB(void) {
+  //TODO: IROBOT - 360 degree scan
   LCD_Print(SM_Move(1, DIR_CCW), BM_LEFT);
 }
 
 void b2CB(void) {
+  //TODO: IROBOT - 4m straight line manoeuvre
   LCD_Print(SM_Move(1, DIR_CW), BM_LEFT);
 }
 
 void b3CB(void) {
+  //TODO: IROBOT - 1m square box manoeuvre
   //Move the motor and print step count to LCD
   static TDIRECTION currentDirection = DIR_CW;
   LCD_Print(SM_Move(50, currentDirection), BM_LEFT); //3.6degs of resolution, (3.6x50 = 180)
@@ -49,8 +52,8 @@ void b3CB(void) {
 }
 
 void b4CB(void) {
-  //TODO: TEST CODE - Send opcodes to the irobot
-  USART_OutChar(128); //send IROBOT START OPCODE
+  //TODO: IROBOT - Parallel wall manoeuvre
+  USART_OutChar(128); //send IROBOT START OPCODE - currently test code
   USART_OutChar(132); //Activate FULL MODE
 }
 
@@ -141,16 +144,17 @@ void main(void) {
       && timerInit() && USART_Init() && SPI_Init())
   {
     LCD_Init(); /* Note: LCD_Init() must be called again, as on a power reset
-                 * the module does not initialise correctly due to weird timing issues
+                 * the module does not init correctly due to weird timing issues
                  * and state of registers.
                  */
     ei();                                   //Globally Enable system wide interrupts
-    LCD_Print(SM_Move(0, DIR_CW), BM_LEFT); //Move stepper motor 0 steps to initially display STEP_COUNT
+    LCD_Print(SM_Move(0, DIR_CW), BM_LEFT); //Move stepper motor 0 steps to init display STEP_COUNT
 
     while (1)
     {
       if (IR_FLAG) {
-        LCD_Print((int) IR_Measure(), TOP_RIGHT); //Perform an IR measurement and print to LCD
+        double dist_cm = (IR_Measure() / 10); //Store the distance in cm - TODO: should be mm?
+        LCD_Print((int) dist_cm, TOP_RIGHT);
         IR_FLAG = false;
       }
 
@@ -165,5 +169,5 @@ void main(void) {
     }
   }
 
-  for (;;); //Safety end loop incase program does not sucessfully initialise
+  for (;;); //Safety end loop incase program does not successfully init
 }
