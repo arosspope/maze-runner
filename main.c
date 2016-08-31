@@ -49,7 +49,7 @@ void b3CB(void) {
 }
 
 void b4CB(void) {
-  //TODO: TEST - Send opcodes to the irobot
+  //TODO: TEST CODE - Send opcodes to the irobot
   USART_OutChar(128); //send IROBOT START OPCODE
   USART_OutChar(132); //Activate FULL MODE
 }
@@ -149,8 +149,6 @@ void main(void) {
 
     while (1)
     {
-      //TODO: USART_Poll() currently not required
-
       if (IR_FLAG) {
         LCD_Print((int) IR_Measure(), TOP_RIGHT); //Perform an IR measurement and print to LCD
         IR_FLAG = false;
