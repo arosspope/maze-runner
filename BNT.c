@@ -18,12 +18,20 @@ bool BNT_Init(void) {
 }
 
 void BNT_Debounce(button_t *button) {
-  //Decrement the Debounce counter
-  button->bntDebounceCnt--;
-  if (button->bntDebounceCnt == 0) {
-    //Button has reached required debounce time, set bnt pressed to true
-    button->bntPressed = true;
-    button->bntReleased = false;
+  /* First of all check if the button debounce count hasn't already reached zero.
+   * 
+   * If it has reached zero, it means that it has yet to be reset, and that the
+   * user is still holding the button down. (we do not want to continuing asserting
+   * bnt pressed in this case)
+   */
+  if (button->bntDebounceCnt != 0) {
+    //Decrement the Debounce counter
+    button->bntDebounceCnt--;
+    if (button->bntDebounceCnt == 0) {
+      //Button has reached required debounce time, set bnt pressed to true
+      button->bntPressed = true;
+      button->bntReleased = false;
+    }
   }
 }
 
