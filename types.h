@@ -18,6 +18,7 @@ extern "C" {
 
 #define _XTAL_FREQ 20000000 //Must re-define the XTAL_FREQ here for __delay_ms    
 
+//Unions to access the lo and hi bytes of a 16 bit signed or unsigned number
 typedef union
 {
   int16_t l;
@@ -37,28 +38,6 @@ typedef union
     uint8_t Hi;
   } s;
 } uint16union_t;
-
-// Union to efficiently access hi and lo parts of a long integer
-typedef union
-{
-  uint32_t l;
-  struct
-  {
-    uint16_t Lo;
-    uint16_t Hi;
-  } s;
-} uint32union_t;
-
-// Union to efficiently access hi and lo parts of a "phrase" (8 bytes)
-typedef union
-{
-  uint64_t l;
-  struct
-  {
-    uint32_t Lo;
-    uint32_t Hi;
-  } s;
-} uint64union_t;
 
 #ifdef	__cplusplus
 }
