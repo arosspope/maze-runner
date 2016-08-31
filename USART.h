@@ -36,13 +36,6 @@ bool USART_InChar(uint8_t * const dataPtr);
  *  @return bool - TRUE if if successfull.
  */
 bool USART_OutChar(const uint8_t data);
-
-/*! @brief Poll the USART status registers to try and receive and/or transmit one character.
- *
- *  @return void
- */
-void UART_Poll(void);
-
 #ifdef	__cplusplus
 }
 #endif
