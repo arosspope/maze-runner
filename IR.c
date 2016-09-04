@@ -16,12 +16,18 @@ bool IR_Init(void) {
   return ADC_Init();
 }
 
+/*! @brief Determines the distance from a raw ADC value.
+ *
+ *  @param ADCdata - The raw ADC data to convert
+ *  @return distance - The distance in mm
+ */
 double calcDistance(double ADCdata) {
   /* The following uses ranges of raw ADC data, to select the most 'accurate'
    * distance conversion equation.
    */
-  double dist_cm; 
-  
+  double dist_cm = 0;
+
+  //Any ADC value greater than 516 (i.e. the dead-zone) will read as 0mm)
   if( ADCdata >= 398 && ADCdata < 516 ){  //20-30
     dist_cm = ((ADCdata-749)/-11.7); 
   } 
