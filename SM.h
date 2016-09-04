@@ -16,6 +16,8 @@ extern "C" {
 
 #include "types.h"
     
+extern const uint8_t SM_H_STEPS_FOR_180; /* Half Steps required to move stepper motor 180 degs */
+
 typedef enum
 {
   DIR_CW = 2,
@@ -32,11 +34,11 @@ bool SM_Init(void);
  *
  *  @param steps - Number of half-steps to move
  *  @param dir - The direction to move in (CW || CCW)
- *  @return STEP_COUNT - returns the current step count of the system
+ *  @return orientation - returns the orientation step (within the 360 deg circle) that SM is at
  * 
  *  @note Assumes that SM_Init has been called.
  */
-int SM_Move(unsigned int steps, TDIRECTION dir);
+uint8_t SM_Move(unsigned int steps, TDIRECTION dir);
 
 #ifdef	__cplusplus
 }
