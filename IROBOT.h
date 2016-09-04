@@ -30,6 +30,11 @@ bool IROBOT_Init(void);
  */
 void IROBOT_Scan360(void);
 
+/*! @brief For testing purposes only (Figure-8 mode). 
+ *  TODO: May want to remove
+ */
+void IROBOT_Test(void);
+
 #ifdef	__cplusplus
 }
 #endif
