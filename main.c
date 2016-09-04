@@ -12,15 +12,13 @@
 /* User defined libaries */
 #include "LED.h"
 #include "LCD.h"
-#include "SM.h"
 #include "IR.h"
 #include "BNT.h"
-#include "USART.h"
-#include "SPI.h"
+#include "IROBOT.h"
 #include "types.h"
 
 #pragma config BOREN = OFF, CPD = OFF, WRT = OFF, FOSC = HS, WDTE = OFF, CP = OFF, LVP = OFF, PWRTE = OFF
-#define TMR0_VAL 100
+#define TMR0_VAL           100  //TMR0 will count from 0 to 100 in 1ms
 #define IR_DELAY           1000 //IR Distance measurement delay of 1s
 #define DEBOUNCE_DELAY     5    //Debounce delay of 5ms
 #define HEARTBEAT_DELAY    500  //Heartbeat of 500ms
@@ -28,33 +26,20 @@ bool IR_FLAG = false;           //Used to signal the main loop when to perform a
 
 /* Callback functions for each button within the system */
 void b1CB(void) {
-  //TODO: IROBOT - 360 degree scan
-  LCD_Print(SM_Move(1, DIR_CCW), BM_LEFT);
+  IROBOT_Scan360();
 }
 
 void b2CB(void) {
   //TODO: IROBOT - 4m straight line manoeuvre
-  LCD_Print(SM_Move(1, DIR_CW), BM_LEFT);
 }
 
 void b3CB(void) {
   //TODO: IROBOT - 1m square box manoeuvre
-  //Move the motor and print step count to LCD
-  static TDIRECTION currentDirection = DIR_CW;
-  LCD_Print(SM_Move(50, currentDirection), BM_LEFT); //3.6degs of resolution, (3.6x50 = 180)
-
-  //Toggle the rotational direction
-  if (currentDirection == DIR_CW){
-    currentDirection = DIR_CCW;
-  } else {
-    currentDirection = DIR_CW;
-  }
 }
 
 void b4CB(void) {
   //TODO: IROBOT - Parallel wall manoeuvre
-  USART_OutChar(128); //send IROBOT START OPCODE - currently test code
-  USART_OutChar(132); //Activate FULL MODE
+  IROBOT_Test(); //TODO: Must remove, initiates test mode (figure-8 pattern)
 }
 
 /* The list of all buttons in the system */
@@ -140,21 +125,18 @@ bool timerInit(void) {
 void main(void) {
   unsigned int i;
 
-  if (LED_Init() && SM_Init() && IR_Init() && LCD_Init() && BNT_Init()
-      && timerInit() && USART_Init() && SPI_Init())
+  if ( BNT_Init() && LED_Init() && LCD_Init() && IROBOT_Init() && IR_Init())
   {
     LCD_Init(); /* Note: LCD_Init() must be called again, as on a power reset
                  * the module does not init correctly due to weird timing issues
                  * and state of registers.
                  */
-    ei();                                   //Globally Enable system wide interrupts
-    LCD_Print(SM_Move(0, DIR_CW), BM_LEFT); //Move stepper motor 0 steps to init display STEP_COUNT
+    ei();       //Globally Enable system wide interrupts
 
     while (1)
     {
       if (IR_FLAG) {
-        double dist_cm = (IR_Measure() / 10); //Store the distance in cm - TODO: should be mm?
-        LCD_Print((int) dist_cm, TOP_RIGHT);
+        LCD_Print((int) IR_Measure(), TOP_RIGHT);  //Print in mm - TODO: should be in cm?
         IR_FLAG = false;
       }
 
