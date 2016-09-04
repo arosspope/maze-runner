@@ -12,7 +12,6 @@
       <itemPath>SM.h</itemPath>
       <itemPath>types.h</itemPath>
       <itemPath>USART.h</itemPath>
-      <itemPath>FIFO.h</itemPath>
       <itemPath>SPI.h</itemPath>
       <itemPath>IROBOT.h</itemPath>
     </logicalFolder>
@@ -31,7 +30,6 @@
       <itemPath>SM.c</itemPath>
       <itemPath>main.c</itemPath>
       <itemPath>USART.c</itemPath>
-      <itemPath>FIFO.c</itemPath>
       <itemPath>SPI.c</itemPath>
       <itemPath>IROBOT.c</itemPath>
     </logicalFolder>
@@ -59,11 +57,8 @@
           <linkerLibItems>
           </linkerLibItems>
         </linkerTool>
-        <archiverTool>
-        </archiverTool>
         <loading>
           <useAlternateLoadableFile>false</useAlternateLoadableFile>
-          <parseOnProdLoad>false</parseOnProdLoad>
           <alternateLoadableFile></alternateLoadableFile>
         </loading>
       </compileType>
@@ -138,6 +133,8 @@
         <property key="opt-xc8-linker-serial" value=""/>
         <property key="program-the-device-with-default-config-words" value="true"/>
       </HI-TECH-LINK>
+      <ICD3PlatformTool>
+      </ICD3PlatformTool>
       <XC8-config-global>
         <property key="advanced-elf" value="true"/>
         <property key="output-file-format" value="-mcof,+elf"/>

@@ -10,7 +10,6 @@
  */
 #include "USART.h"
 #define BAUD_57600 20
-//TODO: We might decide to remove this module
 
 bool USART_Init(void)
 {
