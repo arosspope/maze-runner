@@ -32,3 +32,23 @@
 * drive_straight();
 * drive_square();
 */
+
+drive(int vel, int dir){    //vel = velocity in mm/sec -500->500, dir = direction in degrees from forward
+  USART_OutChar(137);
+  USART_OutChar(hexConvertHigh(vel));
+  USART_OutChar(hexConvertLow(vel));
+  USART_OutChar(hexConvertHigh(dir));
+  USART_OutChar(hexConvertLow(dir));
+}
+
+/*
+ * Convert our given parameters into high and low bits to send to the irobot
+ */
+int hexConvertHigh(int highBit){
+  int result = highBit/256;
+  return result;
+}
+int hexConvertLow(int lowBit){
+  int result = lowBit%256;
+  return result;
+}
