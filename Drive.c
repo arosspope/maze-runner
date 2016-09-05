@@ -33,12 +33,12 @@
 * drive_square();
 */
 
-drive(int vel, int dir){    //vel = velocity in mm/sec -500->500, dir = direction in degrees from forward
+void drive(int vel, int rad){    //vel = velocity in mm/sec 0->500, rad = radius of turn
   USART_OutChar(137);
-  USART_OutChar(hexConvertHigh(vel));
-  USART_OutChar(hexConvertLow(vel));
-  USART_OutChar(hexConvertHigh(dir));
-  USART_OutChar(hexConvertLow(dir));
+  USART_OutChar(hexConvertHigh(vel));   //send the high bit velocity
+  USART_OutChar(hexConvertLow(vel));    //send the low bit velocity
+  USART_OutChar(hexConvertHigh(rad));   //send the high bit radius
+  USART_OutChar(hexConvertLow(rad));    //send the low bit radius
 }
 
 /*
@@ -51,4 +51,12 @@ int hexConvertHigh(int highBit){
 int hexConvertLow(int lowBit){
   int result = lowBit%256;
   return result;
+}
+
+void driveStraight(int vel, int dist){ //vel = velocity in mm/sec 0->500, dist = distance in mm
+  int i = 0;                      //might need to put in an equation to account for drift of the robot
+  while(i < dist){  //good place to use encoder feedback to track how far we have moved...
+    drive(vel,32768);   //32768 is a special code to make the robot go straight as per the datasheet
+    i++;
+  }
 }

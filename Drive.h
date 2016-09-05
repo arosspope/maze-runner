@@ -9,7 +9,8 @@
 #ifndef Drive_H
 #define	Drive_H
 
-
-        // include shiz l8r
+void driveStraight(int vel, int dist);
+        
+// include shiz l8r
 
 #endif
