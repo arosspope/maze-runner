@@ -125,7 +125,7 @@ bool timerInit(void) {
 void main(void) {
   unsigned int i;
 
-  if ( BNT_Init() && LED_Init() && LCD_Init() && IROBOT_Init() && IR_Init())
+  if ( BNT_Init() && LED_Init() && LCD_Init() && IROBOT_Init() && IR_Init() && timerInit())
   {
     LCD_Init(); /* Note: LCD_Init() must be called again, as on a power reset
                  * the module does not init correctly due to weird timing issues
