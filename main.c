@@ -31,6 +31,7 @@ void b1CB(void) {
 
 void b2CB(void) {
   //TODO: IROBOT - 4m straight line manoeuvre
+  IROBOT_DriveStraight();
 }
 
 void b3CB(void) {
@@ -131,9 +132,9 @@ void main(void) {
                  * the module does not init correctly due to weird timing issues
                  * and state of registers.
                  */
-    ei();       //Globally Enable system wide interrupts
+    ei();           //Globally Enable system wide interrupts
+    IROBOT_Start(); //Send startup codes to IROBOT
     
-    IROBOT_Start();
     while (1)
     {
       if (IR_FLAG) {

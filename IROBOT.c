@@ -21,17 +21,11 @@
 #define OP_DEMO_FIG8  4
 
 bool IROBOT_Init(void){
-  bool isSuccess = USART_Init() && SM_Init();
-
-  //If initialisation was successfull, send the startup opcodes to the IROBOT
-//  if (isSuccess){
-//    USART_OutChar(OP_START);
-//    USART_OutChar(OP_FULL);
-//  }
-  return isSuccess;
+  return USART_Init() && SM_Init();
 }
 
 void IROBOT_Start(void){
+  //Put the IROBOT in full control mode
   USART_OutChar(OP_START);
   USART_OutChar(OP_FULL);
 }
@@ -70,6 +64,6 @@ void IROBOT_Test(void){
   USART_OutChar(OP_DEMO_FIG8);
 }
 
-void IROBOT_Drive(void){
-  driveStraight(500, 500);
+void IROBOT_DriveStraight(void){
+  driveStraight(500, 500);  //TODO: test code
 }

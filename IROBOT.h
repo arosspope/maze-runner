@@ -23,6 +23,13 @@ extern "C" {
  */
 bool IROBOT_Init(void);
 
+/*! @brief Puts the IROBOT into Full control mode.
+ *  
+ *  @return void
+ *  @note: must be called after the PIC has finished init all modules.
+ */
+void IROBOT_Start(void);
+
 /*! @brief Performs a 360 scan of the environment using the IR sensor. At the
  *  completion of the scan, the sensor will pointed towards the closest object
  *
@@ -30,14 +37,16 @@ bool IROBOT_Init(void);
  */
 void IROBOT_Scan360(void);
 
+/*! @brief Drive the robot in a straight line 4m.
+ *  
+ *  @return void
+ */
+void IROBOT_DriveStraight(void);
+
 /*! @brief For testing purposes only (Figure-8 mode). 
  *  TODO: May want to remove
  */
 void IROBOT_Test(void);
-
-void IROBOT_Start(void);
-
-void IROBOT_Drive(void);
 #ifdef	__cplusplus
 }
 #endif
