@@ -132,7 +132,8 @@ void main(void) {
                  * and state of registers.
                  */
     ei();       //Globally Enable system wide interrupts
-
+    
+    IROBOT_Start();
     while (1)
     {
       if (IR_FLAG) {

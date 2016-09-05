@@ -35,6 +35,8 @@ void IROBOT_Scan360(void);
  */
 void IROBOT_Test(void);
 
+void IROBOT_Start(void);
+
 #ifdef	__cplusplus
 }
 #endif

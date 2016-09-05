@@ -23,11 +23,16 @@ bool IROBOT_Init(void){
   bool isSuccess = USART_Init() && SM_Init();
 
   //If initialisation was successfull, send the startup opcodes to the IROBOT
-  if (isSuccess){
-    USART_OutChar(OP_START);
-    USART_OutChar(OP_FULL);
-  }
+//  if (isSuccess){
+//    USART_OutChar(OP_START);
+//    USART_OutChar(OP_FULL);
+//  }
   return isSuccess;
+}
+
+void IROBOT_Start(void){
+  USART_OutChar(OP_START);
+  USART_OutChar(OP_FULL);
 }
 
 void IROBOT_Scan360(void){
