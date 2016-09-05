@@ -11,7 +11,7 @@
 
 #include "types.h"
 
-void driveStraight(int vel, int dist);
+void driveStraight(int16_t vel, int dist);
         
 // include shiz l8r
 

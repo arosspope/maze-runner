@@ -28,34 +28,26 @@
 * drive_straight();
 * drive_square();
 */
-/*
- * Convert our given parameters into high and low bits to send to the irobot
- */
-int hexConvertHigh(int highBit){
-  int result = highBit/256;
-  return result;
-}
 
-int hexConvertLow(int lowBit){
-  int result = lowBit%256;
-  return result;
-}
-
-void drive(int vel, int rad){    //vel = velocity in mm/sec 0->500, rad = radius of turn
+void drive(int16_t vel, int16_t rad){    //vel = velocity in mm/sec 0->500, rad = radius of turn
+  int16union_t velBytes, radBytes;
+  velBytes.l = vel;
+  radBytes.l = rad;
+  
   USART_OutChar(137);
-  USART_OutChar(hexConvertHigh(vel));   //send the high bit velocity
-  USART_OutChar(hexConvertLow(vel));    //send the low bit velocity
-  USART_OutChar(hexConvertHigh(rad));   //send the high bit radius
-  USART_OutChar(hexConvertLow(rad));    //send the low bit radius
+  USART_OutChar(velBytes.s.Hi);   //send the high bit velocity
+  USART_OutChar(velBytes.s.Lo);    //send the low bit velocity
+  USART_OutChar(radBytes.s.Hi);   //send the high bit radius
+  USART_OutChar(radBytes.s.Lo);    //send the low bit radius
 }
 
-void driveStraight(int vel, int dist){ //vel = velocity in mm/sec 0->500, dist = distance in mm
-  int i = 0;                      //might need to put in an equation to account for drift of the robot
-  while(i < dist){  //good place to use encoder feedback to track how far we have moved...
-    drive(vel,32768);   //32768 is a special code to make the robot go straight as per the datasheet
-    i++;
+void driveStraight(int16_t vel, int dist){ //vel = velocity in mm/sec 0->500, dist = distance in mm
+  int i;
+  //@Note: At the moment, this code does not actually keep track of distance traveled.
+  //       To fix this, we must get the relevant packet from the irobot that returns distance travelled
+  for(i = 0; i < dist; i++){
+    drive(vel, 32768);
   }
+  
+  drive(0, 32768); //This stops the motor from turning (i.e. velocity = 0)
 }
-
-
-
