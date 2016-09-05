@@ -37,6 +37,7 @@ void IROBOT_Test(void);
 
 void IROBOT_Start(void);
 
+void IROBOT_Drive(void);
 #ifdef	__cplusplus
 }
 #endif

@@ -13,6 +13,7 @@
 #include "USART.h"
 #include "SM.h"
 #include "LCD.h"
+#include "Drive.h"
 
 #define OP_START      128
 #define OP_FULL       132
@@ -67,4 +68,8 @@ void IROBOT_Test(void){
   //Figure-8 test
   USART_OutChar(OP_DEMO);
   USART_OutChar(OP_DEMO_FIG8);
+}
+
+void IROBOT_Drive(void){
+  driveStraight(500, 500);
 }

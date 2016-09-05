@@ -8,12 +8,8 @@
  */
 
 #include "Drive.h"
-#include "IROBOT.h"
-#include "IR.h"
 #include "USART.h"
-#include "SM.h"
 #include "LCD.h"
-
 // defines---------
 
 
@@ -32,6 +28,18 @@
 * drive_straight();
 * drive_square();
 */
+/*
+ * Convert our given parameters into high and low bits to send to the irobot
+ */
+int hexConvertHigh(int highBit){
+  int result = highBit/256;
+  return result;
+}
+
+int hexConvertLow(int lowBit){
+  int result = lowBit%256;
+  return result;
+}
 
 void drive(int vel, int rad){    //vel = velocity in mm/sec 0->500, rad = radius of turn
   USART_OutChar(137);
@@ -41,18 +49,6 @@ void drive(int vel, int rad){    //vel = velocity in mm/sec 0->500, rad = radius
   USART_OutChar(hexConvertLow(rad));    //send the low bit radius
 }
 
-/*
- * Convert our given parameters into high and low bits to send to the irobot
- */
-int hexConvertHigh(int highBit){
-  int result = highBit/256;
-  return result;
-}
-int hexConvertLow(int lowBit){
-  int result = lowBit%256;
-  return result;
-}
-
 void driveStraight(int vel, int dist){ //vel = velocity in mm/sec 0->500, dist = distance in mm
   int i = 0;                      //might need to put in an equation to account for drift of the robot
   while(i < dist){  //good place to use encoder feedback to track how far we have moved...
@@ -60,3 +56,6 @@ void driveStraight(int vel, int dist){ //vel = velocity in mm/sec 0->500, dist =
     i++;
   }
 }
+
+
+
