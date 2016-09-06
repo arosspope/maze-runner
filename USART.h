@@ -25,17 +25,16 @@ bool USART_Init(void);
  
 /*! @brief Get a character from the RCREG.
  *
- *  @param dataPtr A pointer to memory to store the retrieved byte.
- *  @return bool - TRUE if successfull.
+ *  @return data - Byte from the RCREG
  */
-bool USART_InChar(uint8_t * const dataPtr);
+uint8_t USART_InChar(void);
  
 /*! @brief Attempt to transmit a character through TXREG.
  *
  *  @param data The byte to be transmitted.
  *  @return bool - TRUE if if successfull.
  */
-bool USART_OutChar(const uint8_t data);
+void USART_OutChar(const uint8_t data);
 #ifdef	__cplusplus
 }
 #endif

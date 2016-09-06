@@ -35,20 +35,19 @@ bool USART_Init(void)
   return true;
 }
 
-bool USART_InChar(uint8_t * const dataPtr)
+uint8_t USART_InChar(void)
 {
   //TODO: Slightly inefficent to sit here polling - may need to use interrupts
+  uint8_t data;
   while(!PIR1bits.RCIF);  //Wait until data is availalbe
-  *dataPtr = RCREG;       //Read the register
+  data = RCREG;       //Read the register
 
-  return true;
+  return data;
 }
  
-bool USART_OutChar(const uint8_t data)
+void USART_OutChar(const uint8_t data)
 {
   //TODO: Slightly inefficent to sit here polling - may need to use interrupts
   while(!TXSTAbits.TRMT); //Wait until the buffer becmoes empty
   TXREG = data;           //Load register with data to transmit
-
-  return true;
 }
