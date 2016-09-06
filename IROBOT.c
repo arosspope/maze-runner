@@ -20,7 +20,14 @@
 #define OP_DEMO       136
 #define OP_DEMO_FIG8  4
 #define OP_SENSORS    142
-#define OP_SENS_GROUP 1 /* Will return information about bump, wall, cliff, and virtual wall sensors */
+#define OP_DRIVE      137
+#define OP_SENS_DIST  19  /* Distance travelled since last call */
+#define OP_SENS_ANGLE 20  /* Angle turned since last call */
+#define OP_SENS_GROUP 1   /* Will return information about bump, wall, cliff, and virtual wall sensors */
+
+/* Private function prototypes */
+void orientateRobot(uint8_t orientation);
+bool sensorTriggered(void);
 
 bool IROBOT_Init(void){
   return USART_Init() && SM_Init();
@@ -57,6 +64,9 @@ void IROBOT_Scan360(void){
   //Calculate the amount of steps required to point sensor back to the cloest object
   steps = ((SM_H_STEPS_FOR_180*2) - 1 ) - closestObject;
   SM_Move(steps, DIR_CCW);
+  
+  //TODO: TEST CODE - attempt to orient the robot with the object
+  orientateRobot(orientation);
 }
 
 void IROBOT_Test(void){
@@ -72,6 +82,42 @@ void IROBOT_Test(void){
   USART_OutChar(OP_FULL);
 }
 
+void IROBOT_DriveStraight(void){
+  driveStraight(500, 500);  //TODO: test code
+}
+
+/* @brief Rotates the robot to a particular orientation (angle within a circle).
+ *
+ * @param orientation - A step value which corresponds to an angle.
+ * @return void
+ */
+void orientateRobot(uint8_t orientation){
+  int16union_t rxdata;
+  int16_t angleMoved = 0;
+  int16_t angleDesired = (int16_t)(orientation * SM_H_STEP_RESOLUTION); //Convert steps to degrees
+  
+  //Get current angle moved to reset the angle moved count
+  USART_OutChar(OP_SENSORS); USART_OutChar(OP_SENS_ANGLE);
+  USART_InChar(); USART_InChar(); //Dummy read of both bytes to clear the receive buffer
+  
+  //Initiate a drive command @50mm/s and make the robot turn on the spot CW (0xFFFF)
+  drive(50, 0xFFFF);
+  
+  while (angleMoved < angleDesired)
+  {
+    //Get Angle since last movement
+    USART_OutChar(OP_SENSORS); USART_OutChar(OP_SENS_ANGLE);
+    rxdata.s.Hi = USART_InChar();
+    rxdata.s.Lo = USART_InChar();
+    
+    angleMoved += rxdata.l; //Add the angle moved since the last call to the total count 
+  }
+}
+
+/* @brief Determines if any of the relevant sensors have been triggered.
+ *
+ * @return TRUE - if one of the sensors have been tripped
+ */
 bool sensorTriggered(void){
   uint8_t data;
   bool sensorTriggered;
@@ -110,8 +156,4 @@ bool sensorTriggered(void){
   data = USART_InChar();
 
   return sensorTriggered;
-}
-
-void IROBOT_DriveStraight(void){
-  driveStraight(500, 500);  //TODO: test code
 }
