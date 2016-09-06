@@ -19,6 +19,8 @@
 #define OP_FULL       132
 #define OP_DEMO       136
 #define OP_DEMO_FIG8  4
+#define OP_SENSORS    142
+#define OP_SENS_GROUP 1 /* Will return information about bump, wall, cliff, and virtual wall sensors */
 
 bool IROBOT_Init(void){
   return USART_Init() && SM_Init();
@@ -58,10 +60,56 @@ void IROBOT_Scan360(void){
 }
 
 void IROBOT_Test(void){
-  //For testing purposes only - send test opcodes to the irobot
+  //For testing purposes only - send test opcodes to the irobot - TODO: Remove
   //Figure-8 test
   USART_OutChar(OP_DEMO);
   USART_OutChar(OP_DEMO_FIG8);
+  __delay_ms(2000);  //Let the figure-8 demo play for 10 seconds before returning to full mode
+  __delay_ms(2000);
+  __delay_ms(2000);
+  __delay_ms(2000);
+  __delay_ms(2000);
+  USART_OutChar(OP_FULL);
+}
+
+bool sensorTriggered(void){
+  uint8_t data;
+  bool sensorTriggered;
+
+  //Tell the Robot to send back information regarding a group of sensors (will send 10 packets)
+  USART_OutChar(OP_SENSORS);
+  USART_OutChar(OP_SENS_GROUP);
+
+  //1. Packet ID: 7 (Bump and Wheel drop)
+  data = USART_InChar();
+  sensorTriggered = (data & 0b00000011);   //We only care about the bump data so AND with mask
+
+  //2. Packet ID: 8 (Wall)
+  data = USART_InChar();  //Do dummy read as we don't care about this sensor
+
+  //3. Packet ID: 9 (Cliff Left)
+  sensorTriggered &= USART_InChar();
+
+  //4. Packet ID: 10 (Cliff Front Left)
+  sensorTriggered &= USART_InChar();
+
+  //5. Packet ID: 11 (Cliff Front Right)
+  sensorTriggered &= USART_InChar();
+
+  //6. Packet ID: 12 (Cliff Right)
+  sensorTriggered &= USART_InChar();
+
+  //7. Packet ID: 13 (Virtual Wall)
+  data = USART_InChar();  //Do dummy read as we don't care about this sensor
+
+  //8. Packet ID: 14 (Low Side Driver and Wheel overcurrents)
+  data = USART_InChar();  //Do dummy read as we don't care about this sensor
+
+  //9/10. Packet ID: 15-16 (Unused)
+  data = USART_InChar();  //Do dummy read as we don't care about these sensors
+  data = USART_InChar();
+
+  return sensorTriggered;
 }
 
 void IROBOT_DriveStraight(void){
