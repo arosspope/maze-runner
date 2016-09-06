@@ -16,7 +16,8 @@
 #define H_STEP_MASK  0b00000100 //Half-step
 #define F_STEP_MASK  0b00000000 //Full-step
 
-const uint8_t SM_H_STEPS_FOR_180 = 200; //200 Half steps for 180 deg movement
+const uint8_t SM_H_STEPS_FOR_180 = 200;  //200 Half steps for 180 deg movement
+const double SM_H_STEP_RESOLUTION = 0.9; //0.9 degrees per half step
 
 bool SM_Init(void) {
   return SPI_Init(); //Return initialisation of the SPI module

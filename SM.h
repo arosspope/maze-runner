@@ -17,6 +17,7 @@ extern "C" {
 #include "types.h"
     
 extern const uint8_t SM_H_STEPS_FOR_180; /* Half Steps required to move stepper motor 180 degs */
+extern const double SM_H_STEP_RESOLUTION; /* Resolution per half-step (degs) */
 
 typedef enum
 {
