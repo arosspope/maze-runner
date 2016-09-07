@@ -40,15 +40,15 @@ void IROBOT_Start(void){
 }
 
 void IROBOT_Scan360(void){
-  uint8_t orientation, steps, closestObject;
+  uint16_t i, orientation, closestObject, steps;
   double smallestIR = 4000.0; //Set this initial value to outside the range of the IR sensor
   double data;
-
+  
   //Move the Stepper motor 0 steps to obtain the current orientation
   orientation = SM_Move(0, DIR_CW);
 
   //Move stepper motor 360 degs, taking IR samples each time
-  for(uint8_t i = 0; i < (SM_H_STEPS_FOR_180*2); i++){
+  for(i = 0; i < (SM_F_STEPS_FOR_180*2); i++){
     data = IR_Measure();            //Measure the distance
     
     if (data < smallestIR)
@@ -62,11 +62,12 @@ void IROBOT_Scan360(void){
   }
 
   //Calculate the amount of steps required to point sensor back to the cloest object
-  steps = ((SM_H_STEPS_FOR_180*2) - 1 ) - closestObject;
+  steps = ((SM_F_STEPS_FOR_180*2) - 1 ) - closestObject;
   SM_Move(steps, DIR_CCW);
-  
+  LCD_Print((int) smallestIR, BM_LEFT); //TEST-CODE
+  LCD_Print((int) closestObject, BM_RIGHT); //TEST-CODE
   //TODO: TEST CODE - attempt to orient the robot with the object
-  orientateRobot(orientation);
+  //orientateRobot(orientation);
 }
 
 void IROBOT_Test(void){
@@ -83,7 +84,7 @@ void IROBOT_Test(void){
 }
 
 void IROBOT_DriveStraight(void){
-  driveStraight(500, 500);  //TODO: test code
+  driveStraight(500, 1000);  //TODO: test code
 }
 
 /* @brief Rotates the robot to a particular orientation (angle within a circle).
@@ -94,14 +95,14 @@ void IROBOT_DriveStraight(void){
 void orientateRobot(uint8_t orientation){
   int16union_t rxdata;
   int16_t angleMoved = 0;
-  int16_t angleDesired = (int16_t)(orientation * SM_H_STEP_RESOLUTION); //Convert steps to degrees
+  int16_t angleDesired = (int16_t)(orientation * SM_F_STEP_RESOLUTION); //Convert steps to degrees
   
   //Get current angle moved to reset the angle moved count
   USART_OutChar(OP_SENSORS); USART_OutChar(OP_SENS_ANGLE);
   USART_InChar(); USART_InChar(); //Dummy read of both bytes to clear the receive buffer
   
   //Initiate a drive command @50mm/s and make the robot turn on the spot CW (0xFFFF)
-  drive(50, 0xFFFF);
+  drive(50, 0xFFFF, 0);
   
   while (angleMoved < angleDesired)
   {
@@ -112,7 +113,7 @@ void orientateRobot(uint8_t orientation){
     
     angleMoved += rxdata.l; //Add the angle moved since the last call to the total count 
   }
-  drive(0, 0xFFFF); //Tell the IROBOT to stop rotating
+  drive(0, 0xFFFF, 0); //Tell the IROBOT to stop rotating
 }
 
 /* @brief Determines if any of the relevant sensors have been triggered.
