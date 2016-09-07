@@ -67,6 +67,9 @@ double calcDistance(double ADCdata) {
   else if ( ADCdata >= 84 && ADCdata < 89.33 ){
     dist_cm = ((ADCdata - 163.5)/-0.53);
   }
+  else if (ADCdata >= 0 && ADCdata < 84){
+    dist_cm = 150;
+  }
   
   return (dist_cm * 10); //Convert to mm before returning
 }
