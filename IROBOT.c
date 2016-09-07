@@ -112,6 +112,7 @@ void orientateRobot(uint8_t orientation){
     
     angleMoved += rxdata.l; //Add the angle moved since the last call to the total count 
   }
+  drive(0, 0xFFFF); //Tell the IROBOT to stop rotating
 }
 
 /* @brief Determines if any of the relevant sensors have been triggered.
