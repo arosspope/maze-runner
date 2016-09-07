@@ -36,11 +36,12 @@ void b2CB(void) {
 
 void b3CB(void) {
   //TODO: IROBOT - 1m square box manoeuvre
+  IROBOT_Test();
 }
 
 void b4CB(void) {
   //TODO: IROBOT - Parallel wall manoeuvre
-  IROBOT_Test(); //TODO: Must remove, initiates test mode (figure-8 pattern)
+  // //TODO: Must remove, initiates test mode (figure-8 pattern)
 }
 
 /* The list of all buttons in the system */
