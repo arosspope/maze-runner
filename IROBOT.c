@@ -40,15 +40,17 @@ void IROBOT_Start(void){
 }
 
 void IROBOT_Scan360(void){
-  uint16_t i, orientation, closestObject, steps;
+  uint16_t i, orientation, closestObject, stepsBack, offset;
+  uint16_t stepsFor360 = SM_F_STEPS_FOR_180 * 2;
   double smallestIR = 4000.0; //Set this initial value to outside the range of the IR sensor
   double data;
   
   //Move the Stepper motor 0 steps to obtain the current orientation
   orientation = SM_Move(0, DIR_CW);
+  offset = orientation; //The offset equals the current orientation
 
   //Move stepper motor 360 degs, taking IR samples each time
-  for(i = 0; i < (SM_F_STEPS_FOR_180*2); i++){
+  for(i = 0; i < stepsFor360; i++){
     data = IR_Measure();            //Measure the distance
     
     if (data < smallestIR)
@@ -61,9 +63,10 @@ void IROBOT_Scan360(void){
     LCD_Print((int) data, TOP_RIGHT);  //Print the IR reading to LCD
   }
 
-  //Calculate the amount of steps required to point sensor back to the cloest object
-  steps = ((SM_F_STEPS_FOR_180*2) - 1 ) - closestObject;
-  SM_Move(steps, DIR_CCW);
+  //Calculate the amount of steps required to point sensor back to the closest object
+  stepsBack = ((stepsFor360 - 1) + offset - closestObject) % stepsFor360;
+
+  SM_Move(stepsBack, DIR_CCW);
   LCD_Print((int) smallestIR, BM_LEFT); //TEST-CODE
   LCD_Print((int) closestObject, BM_RIGHT); //TEST-CODE
   //TODO: TEST CODE - attempt to orient the robot with the object
