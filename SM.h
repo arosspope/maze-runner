@@ -16,13 +16,13 @@ extern "C" {
 
 #include "types.h"
     
-extern const uint8_t SM_H_STEPS_FOR_180; /* Half Steps required to move stepper motor 180 degs */
-extern const double SM_H_STEP_RESOLUTION; /* Resolution per half-step (degs) */
+extern const uint8_t SM_F_STEPS_FOR_180; /* Half Steps required to move stepper motor 180 degs */
+extern const double SM_F_STEP_RESOLUTION; /* Resolution per half-step (degs) */
 
 typedef enum
 {
-  DIR_CW = 2,
-  DIR_CCW = 0
+  DIR_CW = 0,
+  DIR_CCW = 2
 } TDIRECTION; /* Used to define desired rotation for SM */
     
 /*! @brief Sets up the stepper motor before first use
@@ -39,7 +39,7 @@ bool SM_Init(void);
  * 
  *  @note Assumes that SM_Init has been called.
  */
-uint8_t SM_Move(unsigned int steps, TDIRECTION dir);
+uint16_t SM_Move(unsigned int steps, TDIRECTION dir);
 
 #ifdef	__cplusplus
 }
