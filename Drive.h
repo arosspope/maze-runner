@@ -12,7 +12,7 @@
 #include "types.h"
 
 void driveStraight(int16_t vel, int dist);
-void drive(int16_t vel, int16_t rad, int16_t distance);
+void drive(int16_t vel, int16_t rad);
 // include shiz l8r
 
 #endif
