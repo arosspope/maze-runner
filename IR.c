@@ -27,45 +27,45 @@ double calcDistance(double ADCdata) {
    */
   double dist_cm = 0;
 
-  //Any ADC value greater than 516 (i.e. the dead-zone) will read as 0mm)
-  if( ADCdata >= 398 && ADCdata < 516 ){  //20-30
-    dist_cm = ((ADCdata-749)/-11.7); 
+  //Any ADC value greater than 510 (i.e. the dead-zone) will read as 0mm)
+  if( ADCdata >= 379 && ADCdata < 510 ){  //20-30
+    dist_cm = ((ADCdata-772)/-13.1); 
   } 
-  else if ( ADCdata >= 304 && ADCdata < 398 ){ //30-40
-    dist_cm = ((ADCdata-680)/-9.4);
+  else if ( ADCdata >= 295 && ADCdata < 379 ){ //30-40
+    dist_cm = ((ADCdata-631)/-8.4);
   }
-  else if ( ADCdata >= 244 && ADCdata < 304 ){
-    dist_cm = ((ADCdata-544)/-6);
+  else if ( ADCdata >= 240 && ADCdata < 295 ){  //40-50
+    dist_cm = ((ADCdata-515)/-5.5);
   }
-  else if ( ADCdata >= 201 && ADCdata < 244 ){
-    dist_cm = ((ADCdata-459)/-4.3);
+  else if ( ADCdata >= 197 && ADCdata < 240 ){  //50-60
+    dist_cm = ((ADCdata-455)/-4.3);
   }
-  else if ( ADCdata >= 174 && ADCdata < 201){
-    dist_cm = ((ADCdata-363)/-2.7);
+  else if ( ADCdata >= 173 && ADCdata < 197){  //60-70
+    dist_cm = ((ADCdata-341)/-2.4);
   }
-  else if ( ADCdata >= 157 && ADCdata < 174){
-    dist_cm = ((ADCdata-293)/-1.7);
+  else if ( ADCdata >= 153 && ADCdata < 173){  //70-80
+    dist_cm = ((ADCdata-313)/-2);
   }
-  else if ( ADCdata >= 137 && ADCdata < 157 ){
-    dist_cm = ((ADCdata-317)/-2);
+  else if ( ADCdata >= 137 && ADCdata < 153 ){  //80-90
+    dist_cm = ((ADCdata-281)/-1.6);
   }
-  else if ( ADCdata >= 126 && ADCdata < 137){
-    dist_cm = ((ADCdata-240.5)/-1.15);
+  else if ( ADCdata >= 122 && ADCdata < 137){  //90-100
+    dist_cm = ((ADCdata-272)/-1.5);
   }
-  else if ( ADCdata >= 113 && ADCdata < 126){
-    dist_cm = ((ADCdata-250.5)/-1.25);
+  else if ( ADCdata >= 108 && ADCdata < 122){  //100-110
+    dist_cm = ((ADCdata-262)/-1.4);
   }
-  else if ( ADCdata >= 105 && ADCdata < 113 ){
-    dist_cm = ((ADCdata - 201)/-0.8);
+  else if ( ADCdata >= 99 && ADCdata < 108 ){ //110-120
+    dist_cm = ((ADCdata - 207)/-0.9);
   }
-  else if ( ADCdata >= 96 && ADCdata < 105 ){
-    dist_cm = ((ADCdata-213)/-0.9);
+  else if ( ADCdata >= 91 && ADCdata < 99 ){  //120-130
+    dist_cm = ((ADCdata-195)/-0.8);           //the equation between 120-140 is the same
   }
-  else if ( ADCdata >= 89.33 && ADCdata < 96 ){
-    dist_cm = ((ADCdata - 183.1)/-0.67);
+  else if ( ADCdata >= 83 && ADCdata < 91 ){  //130-140
+    dist_cm = ((ADCdata - 195)/-0.8);
   }
-  else if ( ADCdata >= 84 && ADCdata < 89.33 ){
-    dist_cm = ((ADCdata - 163.5)/-0.53);
+  else if ( ADCdata >= 78 && ADCdata < 83 ){  //140-150
+    dist_cm = ((ADCdata - 152)/-0.5);
   }
   else if (ADCdata >= 0 && ADCdata < 84){
     dist_cm = 150;
