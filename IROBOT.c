@@ -19,8 +19,8 @@
 #define OP_FULL       132
 #define OP_DEMO       136
 #define OP_DEMO_FIG8  4
-#define OP_SENSORS    142
 #define OP_DRIVE      137
+#define OP_SENSORS    142
 #define OP_SENS_DIST  19  /* Distance travelled since last call */
 #define OP_SENS_ANGLE 20  /* Angle turned since last call */
 #define OP_SENS_GROUP 1   /* Will return information about bump, wall, cliff, and virtual wall sensors */
@@ -67,8 +67,7 @@ void IROBOT_Scan360(void){
   stepsBack = ((stepsFor360 - 1) + offset - closestObject) % stepsFor360;
 
   orientation = SM_Move(stepsBack, DIR_CCW);
-  //TODO: TEST CODE - attempt to orient the robot with the object
-  orientateRobot(orientation);
+  orientateRobot(orientation);  //TODO: TEST CODE - attempt to orient the robot with the object
 }
 
 void IROBOT_Test(void){

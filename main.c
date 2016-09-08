@@ -64,6 +64,7 @@ void interrupt isr(void) {
 
     //Check if system is ready to perform another measurement
     if (!(irCnt % IR_DELAY)) {
+      irCnt = 0;
       IR_FLAG = true;
     }
 
@@ -124,20 +125,38 @@ bool timerInit(void) {
   return true;
 }
 
+/*! @brief Initialises the whole system
+ *
+ *  @returns bool - TRUE If init was successfull
+ */
+bool systemInit(void){
+  bool success;
+
+  /* Note: LCD_Init() must be called twice, as on a power reset
+   * the module does not init correctly due to weird timing issues
+   * and state of registers.
+   */
+  success = BNT_Init() && LED_Init() && LCD_Init() && IR_Init() && IROBOT_Init()
+            && timerInit() && LCD_Init();
+
+  return success;
+}
+
 void main(void) {
   unsigned int i;
+  bool initOk;
 
-  if ( BNT_Init() && LED_Init() && LCD_Init() && IROBOT_Init() && IR_Init() && timerInit())
+  di(); //Globally disable interrupts during systemInit
+  initOk = systemInit();
+
+  if (initOk)
   {
-    LCD_Init(); /* Note: LCD_Init() must be called again, as on a power reset
-                 * the module does not init correctly due to weird timing issues
-                 * and state of registers.
-                 */
     ei();           //Globally Enable system wide interrupts
     IROBOT_Start(); //Send startup codes to IROBOT
     
     while (1)
     {
+      //IR has a refresh rate of 1HZ in normal operation mode (standby)
       if (IR_FLAG) {
         LCD_Print((int) IR_Measure(), TOP_RIGHT);  //Print in mm - TODO: should be in cm?
         IR_FLAG = false;
