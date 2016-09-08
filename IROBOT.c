@@ -66,11 +66,9 @@ void IROBOT_Scan360(void){
   //Calculate the amount of steps required to point sensor back to the closest object
   stepsBack = ((stepsFor360 - 1) + offset - closestObject) % stepsFor360;
 
-  SM_Move(stepsBack, DIR_CCW);
-  LCD_Print((int) smallestIR, BM_LEFT); //TEST-CODE
-  LCD_Print((int) closestObject, BM_RIGHT); //TEST-CODE
+  orientation = SM_Move(stepsBack, DIR_CCW);
   //TODO: TEST CODE - attempt to orient the robot with the object
-  //orientateRobot(orientation);
+  orientateRobot(orientation);
 }
 
 void IROBOT_Test(void){
@@ -87,7 +85,29 @@ void IROBOT_Test(void){
 }
 
 void IROBOT_DriveStraight(void){
-  driveStraight(500, 1000);  //TODO: test code
+  int16union_t rxdata;
+  int16_t distanceTravelled = 0;
+  
+  //Get data from the Irobot regarding distance to reset the distance travelled
+  USART_OutChar(OP_SENSORS);
+  USART_OutChar(OP_SENS_DIST);
+  rxdata.s.Hi = USART_InChar();
+  rxdata.s.Lo = USART_InChar();
+  
+  drive(250, 32768); //Tell the IROBOT to drive straight at 250mm/s
+  
+  //Let the robot drive until it reaches a distance of 1m (1000mm)
+  while((distanceTravelled < 1000)){
+    //Get distance traveled since last call
+    USART_OutChar(OP_SENSORS);
+    USART_OutChar(OP_SENS_DIST);
+    rxdata.s.Hi = USART_InChar();
+    rxdata.s.Lo = USART_InChar();
+    
+    distanceTravelled += rxdata.l;
+  }
+  
+  drive(0, 32768); //Tell the IROBOT to stop moving
 }
 
 /* @brief Rotates the robot to a particular orientation (angle within a circle).
@@ -105,7 +125,7 @@ void orientateRobot(uint8_t orientation){
   USART_InChar(); USART_InChar(); //Dummy read of both bytes to clear the receive buffer
   
   //Initiate a drive command @50mm/s and make the robot turn on the spot CW (0xFFFF)
-  drive(50, 0xFFFF, 0);
+  drive(50, 0xFFFF);
   
   while (angleMoved < angleDesired)
   {
@@ -116,7 +136,7 @@ void orientateRobot(uint8_t orientation){
     
     angleMoved += rxdata.l; //Add the angle moved since the last call to the total count 
   }
-  drive(0, 0xFFFF, 0); //Tell the IROBOT to stop rotating
+  drive(0, 0xFFFF); //Tell the IROBOT to stop rotating
 }
 
 /* @brief Determines if any of the relevant sensors have been triggered.
