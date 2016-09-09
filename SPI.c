@@ -33,8 +33,8 @@ bool SPI_Init(void) {
   TRISCbits.TRISC3 = 0; //Output: SPI_CLK
   TRISCbits.TRISC4 = 1; //Input: SPI_SDI
   TRISCbits.TRISC5 = 0; //Output: SPI_SDO
-  TRISCbits.TRISC6 = 1; //Input: USART_TX - TODO: Should be output or input?
-  TRISCbits.TRISC7 = 1; //Input: USART_RX
+  TRISCbits.TRISC6 = 1; //Output: USART_TX
+  TRISCbits.TRISC7 = 0; //Input: USART_RX
 
   SPI_SelectMode(SPI_NONE); //Select no mode initially
   
