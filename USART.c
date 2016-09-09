@@ -11,6 +11,13 @@
 #include "USART.h"
 #define BAUD_57600 20
 
+typedef enum {
+  USART_TX,
+  USART_RX
+} USART_MODE;
+
+void changeMode(USART_MODE mode);
+
 bool USART_Init(void)
 {
   //TXSTA
@@ -39,7 +46,8 @@ uint8_t USART_InChar(void)
 {
   //TODO: Slightly inefficent to sit here polling - may need to use interrupts
   uint8_t data;
-  while(!PIR1bits.RCIF);  //Wait until data is availalbe
+  changeMode(USART_RX);
+  while(!(PIR1bits.RCIF));  //Wait until data is availalbe
   data = RCREG;       //Read the register
 
   return data;
@@ -48,6 +56,19 @@ uint8_t USART_InChar(void)
 void USART_OutChar(const uint8_t data)
 {
   //TODO: Slightly inefficent to sit here polling - may need to use interrupts
+  changeMode(USART_TX);
   while(!TXSTAbits.TRMT); //Wait until the buffer becmoes empty
   TXREG = data;           //Load register with data to transmit
+}
+
+void changeMode(USART_MODE mode){
+  /*** Note this is somewhat of a 'hacky' solution ***/
+  /*** TODO: Ask kyle why it is necessary to switch data direction on PORTC ***/
+  if(mode == USART_RX){
+    TRISCbits.TRISC6 = 1; //Setup PORTC pins for USART Receive 
+    TRISCbits.TRISC7 = 0; 
+  }else{
+    TRISCbits.TRISC6 = 1; //Setup PORTC pins for USART Transmit
+    TRISCbits.TRISC7 = 1; 
+  }
 }
