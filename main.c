@@ -30,7 +30,6 @@ void b1CB(void) {
 }
 
 void b2CB(void) {
-  //TODO: IROBOT - 4m straight line manoeuvre
   IROBOT_DriveStraight();
 }
 
@@ -151,8 +150,8 @@ void main(void) {
 
   if (initOk)
   {
-    ei();           //Globally Enable system wide interrupts
     IROBOT_Start(); //Send startup codes to IROBOT
+    ei();           //Globally Enable system wide interrupts
     
     while (1)
     {
