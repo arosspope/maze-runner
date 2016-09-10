@@ -84,7 +84,7 @@ void IROBOT_Test(void){
 }
 
 void IROBOT_DriveStraight(void){
-  int16union_t rxdata;
+  uint16union_t rxdata;
   int16_t distanceTravelled = 0;
   
   //Get data from the Irobot regarding distance to reset the distance travelled
@@ -96,14 +96,14 @@ void IROBOT_DriveStraight(void){
   drive(250, 32768); //Tell the IROBOT to drive straight at 250mm/s
   
   //Let the robot drive until it reaches a distance of 1m (1000mm)
-  while((distanceTravelled < 500) && !sensorTriggered()){
+  while((distanceTravelled < 1000) && !sensorTriggered()){
     //Get distance traveled since last call
     USART_OutChar(OP_SENSORS);
     USART_OutChar(OP_SENS_DIST);
     rxdata.s.Hi = USART_InChar();
     rxdata.s.Lo = USART_InChar();
     
-    distanceTravelled += rxdata.l;
+    distanceTravelled += (int16_t) rxdata.l;
   }
   
   drive(0, 32768); //Tell the IROBOT to stop moving
@@ -121,12 +121,17 @@ void orientateRobot(uint8_t orientation){
   
   //Get current angle moved to reset the angle moved count
   USART_OutChar(OP_SENSORS); USART_OutChar(OP_SENS_ANGLE);
-  rxdata.s.Hi = USART_InChar(); 
-  rxdata.s.Lo = USART_InChar(); //Dummy read of both bytes to clear the receive buffer
+  USART_InChar(); USART_InChar(); //Dummy read of both bytes to clear the receive buffer
 
-  LCD_Print((int) angleDesired, BM_RIGHT); //TEST CODE
-  LCD_Print(rxdata.l, BM_LEFT);
-  
+  //TODO: TEST CODE ----------------
+  USART_OutChar(OP_SENSORS); USART_OutChar(OP_SENS_ANGLE);
+  rxdata.s.Hi = USART_InChar();
+  rxdata.s.Lo = USART_InChar();
+
+  LCD_Print((int) angleDesired, BM_RIGHT);
+  LCD_Print((int) rxdata.l, BM_LEFT); //This should print out a value of 0 (or close to it)
+  //--------------------------------
+
   //Initiate a drive command @50mm/s and make the robot turn on the spot CW (0xFFFF)
   drive(50, 0xFFFF);
   
@@ -138,7 +143,6 @@ void orientateRobot(uint8_t orientation){
     rxdata.s.Lo = USART_InChar();
     
     angleMoved += (int16_t) rxdata.l; //Add the angle moved since the last call to the total count
-    
   }
   
   drive(0, 0xFFFF); //Tell the IROBOT to stop rotating
