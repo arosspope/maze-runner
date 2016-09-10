@@ -20,7 +20,6 @@ bool FIFO_Put(TFIFO * const FIFO, const uint8_t data)
 {
   bool success = false;
 
-  di(); //Enter critical section
   if (FIFO->NbBytes < FIFO_SIZE) //Ensure that the buffer is not full before putting data within it
   {
     FIFO->NbBytes++;                        //Increment data counter
@@ -29,7 +28,7 @@ bool FIFO_Put(TFIFO * const FIFO, const uint8_t data)
 
     success = true;
   }
-  ei(); //Exit critical section
+
   return success;
 }
 
@@ -37,7 +36,6 @@ bool FIFO_Get(TFIFO * const FIFO, uint8_t * const dataPtr)
 {
   bool success = false;
 
-  di();
   if (FIFO->NbBytes > 0)
   {
     FIFO->NbBytes--;
@@ -46,6 +44,6 @@ bool FIFO_Get(TFIFO * const FIFO, uint8_t * const dataPtr)
 
     success = true;
   }
-  ei();
+
   return success;
 }

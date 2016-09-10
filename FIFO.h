@@ -14,7 +14,7 @@
 #include "types.h"
 
 // Number of bytes in a FIFO
-#define FIFO_SIZE 256
+#define FIFO_SIZE 16
 
 // The TFIFO structure which is used to implement a general-purpose byte-sized first-in/last-out data structure.
 /*!
@@ -40,7 +40,8 @@ void FIFO_Init(TFIFO * const FIFO);
  *  @param FIFO A pointer to a FIFO struct where data is to be stored.
  *  @param data A byte of data to store in the FIFO buffer.
  *  @return BOOL - TRUE if data is successfully stored in the FIFO.
- *  @note Assumes that FIFO_Init has been called.
+ *  
+ *  @note Must be called within a critical section, or within an ISR
  */
 bool FIFO_Put(TFIFO * const FIFO, const uint8_t data);
 
@@ -49,7 +50,8 @@ bool FIFO_Put(TFIFO * const FIFO, const uint8_t data);
  *  @param FIFO A pointer to a FIFO struct with data to be retrieved.
  *  @param dataPtr A pointer to a memory location to place the retrieved byte.
  *  @return BOOL - TRUE if data is successfully retrieved from the FIFO.
- *  @note Assumes that FIFO_Init has been called.
+ *
+ *  @note Must be called within a critical section, or within an ISR
  */
 bool FIFO_Get(TFIFO * const FIFO, uint8_t * const dataPtr);
 
