@@ -14,6 +14,7 @@
 #include "LCD.h"
 #include "IR.h"
 #include "BNT.h"
+#include "USART.h"
 #include "IROBOT.h"
 #include "types.h"
 
@@ -55,6 +56,8 @@ void interrupt isr(void) {
   static unsigned int debCnt = 0;
   static unsigned int hbCnt = 0;
   static unsigned int irCnt = 0;
+
+  USART_ISR(); //Service the USART module first.
 
   if (INTCONbits.T0IF && INTCONbits.T0IE) {
     INTCONbits.T0IF = 0; // Clear Flag for Timer0 Interrupt
@@ -150,8 +153,8 @@ void main(void) {
 
   if (initOk)
   {
-    IROBOT_Start(); //Send startup codes to IROBOT
     ei();           //Globally Enable system wide interrupts
+    IROBOT_Start(); //Send startup codes to IROBOT
     
     while (1)
     {

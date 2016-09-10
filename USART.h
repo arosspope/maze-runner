@@ -35,6 +35,14 @@ uint8_t USART_InChar(void);
  *  @return bool - TRUE if if successfull.
  */
 void USART_OutChar(const uint8_t data);
+
+/*! @brief The ISR for the USART Module.
+ *
+ *  @note Is not actually called automatically, must be inserted into the main
+ *  interrupt vector in main.c
+ */
+void USART_ISR(void);
+
 #ifdef	__cplusplus
 }
 #endif
