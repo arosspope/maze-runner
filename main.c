@@ -35,8 +35,9 @@ void b2CB(void) {
 }
 
 void b3CB(void) {
-  //TODO: IROBOT - 1m square box manoeuvre
-  IROBOT_Test();
+  //IROBOT - 1m square box manoeuvre
+  IROBOT_DriveSquare();
+  //IROBOT_Test();
 }
 
 void b4CB(void) {

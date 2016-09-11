@@ -109,6 +109,15 @@ void IROBOT_DriveStraight(int16_t dist){
   drive(0, 32768); //Tell the IROBOT to stop moving
 }
 
+void IROBOT_DriveSquare(void){
+  
+  for(int i=0; i<4; i++)
+  {
+    IROBOT_DriveStraight(1000);
+    orientateRobot(90);
+  }
+}
+
 /* @brief Rotates the robot to a particular orientation (angle within a circle).
  *
  * @param orientation - A step value which corresponds to an angle.
