@@ -83,7 +83,7 @@ void IROBOT_Test(void){
   USART_OutChar(OP_FULL);
 }
 
-void IROBOT_DriveStraight(void){
+void IROBOT_DriveStraight(int16_t dist){
   uint16union_t rxdata;
   int16_t distanceTravelled = 0;
   
@@ -96,7 +96,7 @@ void IROBOT_DriveStraight(void){
   drive(250, 32768); //Tell the IROBOT to drive straight at 250mm/s
   
   //Let the robot drive until it reaches a distance of 1m (1000mm)
-  while((distanceTravelled < 1000) && !sensorTriggered()){
+  while((distanceTravelled < dist) && !sensorTriggered()){
     //Get distance traveled since last call
     USART_OutChar(OP_SENSORS);
     USART_OutChar(OP_SENS_DIST);

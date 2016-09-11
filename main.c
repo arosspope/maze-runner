@@ -31,7 +31,7 @@ void b1CB(void) {
 }
 
 void b2CB(void) {
-  IROBOT_DriveStraight();
+  IROBOT_DriveStraight(1000);
 }
 
 void b3CB(void) {

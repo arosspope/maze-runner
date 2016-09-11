@@ -41,7 +41,7 @@ void IROBOT_Scan360(void);
  *  
  *  @return void
  */
-void IROBOT_DriveStraight(void);
+void IROBOT_DriveStraight(int16_t dist);
 
 /*! @brief For testing purposes only (Figure-8 mode). 
  *  TODO: May want to remove
