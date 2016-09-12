@@ -36,8 +36,8 @@ void b2CB(void) {
 
 void b3CB(void) {
   //IROBOT - 1m square box manoeuvre
-  IROBOT_DriveSquare();
-  //IROBOT_Test();
+  //IROBOT_DriveSquare();
+  IROBOT_Test();
 }
 
 void b4CB(void) {
@@ -57,8 +57,6 @@ void interrupt isr(void) {
   static unsigned int debCnt = 0;
   static unsigned int hbCnt = 0;
   static unsigned int irCnt = 0;
-
-  USART_ISR(); //Service the USART module first.
 
   if (INTCONbits.T0IF && INTCONbits.T0IE) {
     INTCONbits.T0IF = 0; // Clear Flag for Timer0 Interrupt

@@ -47,7 +47,7 @@ void IROBOT_DriveStraight(int16_t dist);
  *  
  *  @return void
  */
-void IROBOT_DriveSquare(void)
+void IROBOT_DriveSquare(void);
 
 /*! @brief For testing purposes only (Figure-8 mode). 
  *  TODO: May want to remove

@@ -1,4 +1,4 @@
-/*! @file USART.c
+/*! @file USART.c - No ISR
  *
  *  @brief Serial Communication via USART.
  *
@@ -9,39 +9,31 @@
  *  @date 02-08-2016
  */
 #include "USART.h"
-#include "FIFO.h"
 #define BAUD_57600 20
-
-/* Transmit and Recieve FIFOs */
-static TFIFO TxFIFO, RxFIFO;
 
 bool USART_Init(void)
 {
-  //TXSTA
-  TXSTAbits.TX9  = 0; //8 bit transmission
-  TXSTAbits.TXEN = 1; //Transmit enable
-  TXSTAbits.SYNC = 0; //Async mode
-  TXSTAbits.BRGH = 1; //High speed baud rate for async mode
-
-  //RCSTA
-  RCSTAbits.SPEN  = 1; //Serial port enabled
-  RCSTAbits.RX9   = 0; //8 bit receive
-  RCSTAbits.CREN  = 1; //Enable continous receive
-  RCSTAbits.ADDEN = 0; //Disable address detection
+  //Setup TRISC Register
+  TRISCbits.TRISC6 = 1;
+  TRISCbits.TRISC7 = 1;
   
-  //Set the Baud Rate
-  SPBRG = BAUD_57600;
-
-  TRISCbits.TRISC6 = 1; //Input: USART_RX - TODO: Must Confirm correct?
-  TRISCbits.TRISC7 = 0; //Output USART_TX
-
-  //Interrupts
-  PIE1bits.RCIE = 1;  //Receive interrupt Enabled
-  PIE1bits.TXIE = 0;  //Transmit interrupt disabled
-
-  //Initialise the FIFOs
-  FIFO_Init(&TxFIFO);
-  FIFO_Init(&RxFIFO);
+  TXSTAbits.BRGH = 1; //High speed baud rate for async mode
+  TXSTAbits.SYNC = 0; //Async mode
+  RCSTAbits.SPEN = 1; //Serial port enabled
+  RCSTAbits.CREN = 1; //Enable continous receive
+  RCSTAbits.SREN = 0; //No effect
+	
+  PIE1bits.TXIE = 0; //Disable Interrupts
+  PIE1bits.RCIE = 0;
+  
+  TXSTAbits.TX9 = 0; //8 bit transmission
+  RCSTAbits.RX9 = 0; //8 bit receive
+  
+	//Reset the transmitter
+  TXSTAbits.TXEN = 0;
+  TXSTAbits.TXEN = 1; 
+  
+	SPBRG = BAUD_57600; //Baud rate 57600
   
   return true;
 }
@@ -49,52 +41,21 @@ bool USART_Init(void)
 uint8_t USART_InChar(void)
 {
   uint8_t data;
-  bool gotData = false;
-  //TODO: Because FIFO_get uses critical sections, the isr may not get a chance to put
-  //data in the RxFIFO. Will need to test and investigate.
-
-  //Wait until data has been received
-  while(!gotData){
-    di(); //Enter Critical Section
-    gotData = FIFO_Get(&RxFIFO, &data); //Attempt to get data out of receive fifo
-    ei(); //Exit Critical Section
-
-    //Check if OERR has been set, if so - must clear in software (p.117 of PIC datasheet)
-    if(RCSTAbits.OERR){
-      RCSTAbits.CREN = 0;
-      RCSTAbits.CREN = 1;
-    } //TODO: This might be better placed in ISR?
+  
+  while(!(PIR1bits.RCIF));  //Wait for data to become available
+	data = RCREG;
+  
+  //If error during transmission, make sure to clear in software
+  if(RCSTAbits.OERR){
+    CREN = 0;
+    CREN = 1;
   }
-
+  
   return data;
 }
- 
+
 void USART_OutChar(const uint8_t data)
 {
-  bool spaceInFIFO = false;
-  
-  //Wait until space in the TxFIFO becomes available, then put data into fifo
-  while(!spaceInFIFO){
-    di(); //Enter Critical Section
-    spaceInFIFO = FIFO_Put(&TxFIFO, data);
-    ei(); //Exit Critical Section
-  }
-
-  PIE1bits.TXIE = 1; //Arm transmission interrupt
-}
-
-void USART_ISR(void)
-{
-  //If recieve flag has been triggered, put data into the receive FIFO
-  if(PIR1bits.RCIF){
-    FIFO_Put(&RxFIFO, RCREG);
-  }
-  
-  //If transmitt flag is okay, and we have actually enabled transmitt interrupts
-  if(PIR1bits.TXIF && PIE1bits.TXIE){
-    //Put data from the TxFIFO into TXREG
-    if (!FIFO_Get(&TxFIFO, (uint8_t *)&TXREG)){
-      PIE1bits.TXIE = 0; //Disable transmit interrupt if no bytes left in FIFO
-    }
-  }
+  while(!(TXSTAbits.TRMT)); //While buffer is not empty, wait
+	TXREG=data;               //load register with data to be transmitted
 }
