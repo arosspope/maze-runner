@@ -83,6 +83,5 @@ double IR_Measure(void) {
   }
   data = (data / 20);
   
-  LCD_Print((int) data, TOP_LEFT); //TODO: TEST CODE - Should be removed
   return calcDistance(data);  //Returns the converted ADC value to distance in mm
 }
