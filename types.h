@@ -39,9 +39,14 @@ typedef union
   } s;
 } uint16union_t;
 
+typedef enum
+{
+  DIR_CW = 0,
+  DIR_CCW = 2
+} TDIRECTION; /* Used to define rotational direction within the system */
+
 #ifdef	__cplusplus
 }
 #endif
 
 #endif	/* TYPES_H */
-

@@ -18,12 +18,6 @@ extern "C" {
     
 extern const uint8_t SM_F_STEPS_FOR_180; /* Half Steps required to move stepper motor 180 degs */
 extern const double SM_F_STEP_RESOLUTION; /* Resolution per half-step (degs) */
-
-typedef enum
-{
-  DIR_CW = 0,
-  DIR_CCW = 2
-} TDIRECTION; /* Used to define desired rotation for SM */
     
 /*! @brief Sets up the stepper motor before first use
  *
