@@ -27,20 +27,23 @@ bool IR_FLAG = false;           //Used to signal the main loop when to perform a
 
 /* Callback functions for each button within the system */
 void b1CB(void) {
+  LCD_PrintStr("SCAN", TOP_LEFT); //Print the MODE
   IROBOT_Scan360();
 }
 
 void b2CB(void) {
+  LCD_PrintStr("DRIVE", TOP_LEFT); //Print the MODE
   IROBOT_DriveStraight(4000);
 }
 
 void b3CB(void) {
+  LCD_PrintStr("BOX", TOP_LEFT); //Print the MODE
   IROBOT_DriveSquare();
 }
 
 void b4CB(void) {
   //TODO: IROBOT - Parallel wall manoeuvre
-  // //TODO: Must remove, initiates test mode (figure-8 pattern)
+  LCD_PrintStr("WALL", TOP_LEFT); //Print the MODE
 }
 
 /* The list of all buttons in the system */
@@ -155,9 +158,11 @@ void main(void) {
     
     while (1)
     {
+      LCD_PrintStr("REST", TOP_LEFT); //By default, the robot is in 'REST' mode
+
       //IR has a refresh rate of 1HZ in normal operation mode (standby)
       if (IR_FLAG) {
-        LCD_Print((int) IR_Measure(), TOP_RIGHT);  //Print in mm - TODO: should be in cm?
+        LCD_PrintInt((int) IR_Measure(), TOP_RIGHT);  //Print in mm - TODO: should be in cm?
         IR_FLAG = false;
       }
 

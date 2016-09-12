@@ -62,7 +62,7 @@ void IROBOT_Scan360(void){
     }
 
     orientation = SM_Move(1, DIR_CW);   //Move the motor half a step CW
-    LCD_Print((int) data, TOP_RIGHT);  //Print the IR reading to LCD
+    LCD_PrintInt((int) data, TOP_RIGHT);  //Print the IR reading to LCD
   }
 
   //Calculate the amount of steps required to point sensor back to the closest object
@@ -91,7 +91,7 @@ void IROBOT_DriveStraight(int16_t dist){
     rxdata.s.Lo = USART_InChar();
     
     distanceTravelled += (int16_t) rxdata.l;
-    LCD_Print(distanceTravelled, BM_LEFT);
+    LCD_PrintInt(distanceTravelled, BM_LEFT);
   }
   
   drive(0, 0); //Tell the IROBOT to stop moving
@@ -141,7 +141,7 @@ void rotateRobot(uint16_t angle, TDIRECTION dir){
       angleMoved += ((int16_t) rxdata.l * -1); //CW direction returns negative angles
     }
 
-    LCD_Print(angleMoved, BM_RIGHT);
+    LCD_PrintInt(angleMoved, BM_RIGHT);
   }
   
   drive(0, 0); //Tell the IROBOT to stop rotating

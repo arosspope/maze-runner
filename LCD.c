@@ -57,7 +57,7 @@ void setCursor(unsigned char address) {
   writeControl(address); //write address command
 }
 
-void LCD_Print(signed int data, TSCREEN_AREA area) {
+void LCD_PrintInt(signed int data, TSCREEN_AREA area) {
   int i;
   char str[10];
 
@@ -66,6 +66,24 @@ void LCD_Print(signed int data, TSCREEN_AREA area) {
     sprintf(str, "%-*d", 8, data);
   } else {
     sprintf(str, "%*d", 8, data);
+  }
+
+  /* Move the cursor to specified area on screen and write the string. */
+  setCursor(area);
+  for (i = 0; i < strlen(str); i++) {
+    writeChar(str[i]);
+  }
+}
+
+void LCD_PrintStr(const char * string, TSCREEN_AREA area){
+  int i;
+  char str[10];
+  
+  /* Depending if text will be left or right justified, put string in */
+  if (area == TOP_LEFT || area == BM_LEFT) {
+    sprintf(str, "%-*s", 8, string);
+  } else {
+    sprintf(str, "%*s", 8, string);
   }
 
   /* Move the cursor to specified area on screen and write the string. */

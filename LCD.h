@@ -31,12 +31,19 @@ bool LCD_Init(void);
 
 /*! @brief Prints a string at a certain position on the LCD.
  *
- *  @param data - The data to print
+ *  @param data - The int to print
  *  @param area - The area to put the string in.
  *  @note Assumes that LCD_Init has been called.
  */
-void LCD_Print(signed int data, TSCREEN_AREA area);
+void LCD_PrintInt(signed int data, TSCREEN_AREA area);
 
+/*! @brief Prints a string at a certain position on the LCD.
+ *
+ *  @param string - The string to Print
+ *  @param area - The area to put the string in.
+ *  @note Assumes that LCD_Init has been called.
+ */
+void LCD_PrintStr(const char * string, TSCREEN_AREA area);
 #ifdef	__cplusplus
 }
 #endif
