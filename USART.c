@@ -1,4 +1,4 @@
-/*! @file USART.c - No ISR
+/*! @file USART.c
  *
  *  @brief Serial Communication via USART.
  *
@@ -14,8 +14,8 @@
 bool USART_Init(void)
 {
   //Setup TRISC Register
-  TRISCbits.TRISC6 = 1;
-  TRISCbits.TRISC7 = 1;
+  TRISCbits.TRISC6 = 1; //USART_TX
+  TRISCbits.TRISC7 = 1; //USART_RX
   
   TXSTAbits.BRGH = 1; //High speed baud rate for async mode
   TXSTAbits.SYNC = 0; //Async mode

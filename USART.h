@@ -32,7 +32,6 @@ uint8_t USART_InChar(void);
 /*! @brief Attempt to transmit a character through TXREG.
  *
  *  @param data The byte to be transmitted.
- *  @return bool - TRUE if if successfull.
  */
 void USART_OutChar(const uint8_t data);
 
