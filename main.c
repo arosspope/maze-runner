@@ -31,13 +31,11 @@ void b1CB(void) {
 }
 
 void b2CB(void) {
-  IROBOT_DriveStraight(1000);
+  IROBOT_DriveStraight(4000);
 }
 
 void b3CB(void) {
-  //IROBOT - 1m square box manoeuvre
-  //IROBOT_DriveSquare();
-  IROBOT_Test();
+  IROBOT_DriveSquare();
 }
 
 void b4CB(void) {
