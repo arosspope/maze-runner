@@ -14,7 +14,6 @@
       <itemPath>USART.h</itemPath>
       <itemPath>SPI.h</itemPath>
       <itemPath>IROBOT.h</itemPath>
-      <itemPath>Drive.h</itemPath>
     </logicalFolder>
     <logicalFolder name="LinkerScript"
                    displayName="Linker Files"
@@ -33,7 +32,6 @@
       <itemPath>USART.c</itemPath>
       <itemPath>SPI.c</itemPath>
       <itemPath>IROBOT.c</itemPath>
-      <itemPath>Drive.c</itemPath>
     </logicalFolder>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"
