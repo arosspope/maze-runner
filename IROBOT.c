@@ -26,7 +26,7 @@
 #define OP_SENS_GROUP 1   /* Will return information about bump, wall, cliff, and virtual wall sensors */
 
 /* Private function prototypes */
-void orientateRobot(uint8_t orientation);
+void rotateRobot(int16_t angle);
 bool sensorTriggered(void);
 
 bool IROBOT_Init(void){
@@ -67,7 +67,7 @@ void IROBOT_Scan360(void){
   stepsBack = ((stepsFor360 - 1) + offset - closestObject) % stepsFor360;
 
   orientation = SM_Move(stepsBack, DIR_CCW);
-  orientateRobot(closestObject);  //TODO: TEST CODE - attempt to orient the robot with the object
+  rotateRobot(90);  //TODO: TEST CODE - attempt to orient the robot with the object
 }
 
 void IROBOT_Test(void){
@@ -93,7 +93,7 @@ void IROBOT_DriveStraight(int16_t dist){
   rxdata.s.Hi = USART_InChar();
   rxdata.s.Lo = USART_InChar();
   
-  drive(250, 32768); //Tell the IROBOT to drive straight at 250mm/s
+  drive(200, 32768); //Tell the IROBOT to drive straight at 250mm/s
   
   //Let the robot drive until it reaches a distance of 1m (1000mm)
   while((distanceTravelled < dist) && !sensorTriggered()){
@@ -104,7 +104,10 @@ void IROBOT_DriveStraight(int16_t dist){
     rxdata.s.Lo = USART_InChar();
     
     distanceTravelled += (int16_t) rxdata.l;
+    LCD_Print(distanceTravelled, BM_LEFT);
   }
+  
+  
   
   drive(0, 32768); //Tell the IROBOT to stop moving
 }
@@ -114,47 +117,40 @@ void IROBOT_DriveSquare(void){
   for(int i=0; i<4; i++)
   {
     IROBOT_DriveStraight(1000);
-    orientateRobot(90);
+    rotateRobot(90);
+    __delay_ms(1000);
   }
 }
 
 /* @brief Rotates the robot to a particular orientation (angle within a circle).
  *
- * @param orientation - A step value which corresponds to an angle.
+ * @param angle - (360 from CCW)
  * @return void
  */
-void orientateRobot(uint8_t orientation){
+void rotateRobot(int16_t angle){
   uint16union_t rxdata;
-  int16_t angleMoved = 0;
-  int16_t angleDesired = (int16_t)(orientation * SM_F_STEP_RESOLUTION); //Convert steps to degrees
+  uint16_t angleMoved = 0;
   
   //Get current angle moved to reset the angle moved count
   USART_OutChar(OP_SENSORS); USART_OutChar(OP_SENS_ANGLE);
-  USART_InChar(); USART_InChar(); //Dummy read of both bytes to clear the receive buffer
-
-  //TODO: TEST CODE ----------------
-  USART_OutChar(OP_SENSORS); USART_OutChar(OP_SENS_ANGLE);
-  rxdata.s.Hi = USART_InChar();
-  rxdata.s.Lo = USART_InChar();
-
-  LCD_Print((int) angleDesired, BM_RIGHT);
-  LCD_Print((int) rxdata.l, BM_LEFT); //This should print out a value of 0 (or close to it)
-  //--------------------------------
+  rxdata.s.Hi = USART_InChar(); 
+  rxdata.s.Lo = USART_InChar(); //Dummy read of both bytes to clear the receive buffer
 
   //Initiate a drive command @50mm/s and make the robot turn on the spot CW (0xFFFF)
-  drive(50, 0xFFFF);
+  rotate(210, false);
+  LCD_Print(angle, BM_RIGHT);
   
-  while (angleMoved < angleDesired)
+  while ((angleMoved < angle) && !sensorTriggered())
   {
     //Get Angle since last movement
     USART_OutChar(OP_SENSORS); USART_OutChar(OP_SENS_ANGLE);
     rxdata.s.Hi = USART_InChar();
     rxdata.s.Lo = USART_InChar();
     
-    angleMoved += (int16_t) rxdata.l; //Add the angle moved since the last call to the total count
+    angleMoved += rxdata.l; //Add the angle moved since the last call to the total count
   }
   
-  drive(0, 0xFFFF); //Tell the IROBOT to stop rotating
+  rotate(0, false); //Tell the IROBOT to stop rotating
 }
 
 /* @brief Determines if any of the relevant sensors have been triggered.

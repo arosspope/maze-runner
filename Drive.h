@@ -13,6 +13,7 @@
 
 void driveStraight(int16_t vel, int dist);
 void drive(int16_t vel, int16_t rad);
+void rotate(int16_t vel, bool CW);
 // include shiz l8r
 
 #endif
