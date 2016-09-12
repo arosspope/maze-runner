@@ -5,7 +5,7 @@
  *  This contains the functions for communicating with the iRobot through the
  *  create open interface.
  *
- *  @author
+ *  @author A.Pope, K.Leone, C.Stewart, J.Lynch
  *  @date 02-09-2016
  */
 #include "IROBOT.h"
@@ -13,21 +13,23 @@
 #include "USART.h"
 #include "SM.h"
 #include "LCD.h"
-#include "Drive.h"
 
 #define OP_START      128
 #define OP_FULL       132
 #define OP_DEMO       136
 #define OP_DEMO_FIG8  4
 #define OP_DRIVE      137
+#define OP_DRIVE_DIRECT 145
 #define OP_SENSORS    142
 #define OP_SENS_DIST  19  /* Distance travelled since last call */
 #define OP_SENS_ANGLE 20  /* Angle turned since last call */
 #define OP_SENS_GROUP 1   /* Will return information about bump, wall, cliff, and virtual wall sensors */
 
 /* Private function prototypes */
-void rotateRobot(int16_t angle);
+void rotateRobot(uint16_t angle, TDIRECTION dir);
 bool sensorTriggered(void);
+void drive(int16_t leftWheelVel, int16_t rightWheelVel);
+/* End Private function prototypes */
 
 bool IROBOT_Init(void){
   return USART_Init() && SM_Init();
@@ -65,22 +67,7 @@ void IROBOT_Scan360(void){
 
   //Calculate the amount of steps required to point sensor back to the closest object
   stepsBack = ((stepsFor360 - 1) + offset - closestObject) % stepsFor360;
-
-  orientation = SM_Move(stepsBack, DIR_CCW);
-  rotateRobot(90);  //TODO: TEST CODE - attempt to orient the robot with the object
-}
-
-void IROBOT_Test(void){
-  //For testing purposes only - send test opcodes to the irobot - TODO: Remove
-  //Figure-8 test
-  USART_OutChar(OP_DEMO);
-  USART_OutChar(OP_DEMO_FIG8);
-  __delay_ms(2000);  //Let the figure-8 demo play for 10 seconds before returning to full mode
-  __delay_ms(2000);
-  __delay_ms(2000);
-  __delay_ms(2000);
-  __delay_ms(2000);
-  USART_OutChar(OP_FULL);
+  SM_Move(stepsBack, DIR_CCW);
 }
 
 void IROBOT_DriveStraight(int16_t dist){
@@ -90,12 +77,12 @@ void IROBOT_DriveStraight(int16_t dist){
   //Get data from the Irobot regarding distance to reset the distance travelled
   USART_OutChar(OP_SENSORS);
   USART_OutChar(OP_SENS_DIST);
-  rxdata.s.Hi = USART_InChar();
+  rxdata.s.Hi = USART_InChar(); //Dummy read of sensor values
   rxdata.s.Lo = USART_InChar();
   
-  drive(200, 32768); //Tell the IROBOT to drive straight at 250mm/s
+  drive(200, 200); //Tell the IROBOT to drive straight at [X] mm/s TODO: Will need to insert optimal velocity
   
-  //Let the robot drive until it reaches a distance of 1m (1000mm)
+  //Let the robot drive until it reaches the desired distance
   while((distanceTravelled < dist) && !sensorTriggered()){
     //Get distance traveled since last call
     USART_OutChar(OP_SENSORS);
@@ -107,38 +94,39 @@ void IROBOT_DriveStraight(int16_t dist){
     LCD_Print(distanceTravelled, BM_LEFT);
   }
   
-  
-  
-  drive(0, 32768); //Tell the IROBOT to stop moving
+  drive(0, 0); //Tell the IROBOT to stop moving
 }
 
 void IROBOT_DriveSquare(void){
   
   for(int i=0; i<4; i++)
   {
-    IROBOT_DriveStraight(1000);
-    rotateRobot(90);
-    __delay_ms(1000);
+    IROBOT_DriveStraight(1000); //Drive straight for 1m
+    rotateRobot(90, DIR_CCW);   //Rotate 90 degs CCW
+    __delay_ms(1000);           //Forcing a delay makes the robot turn more accurately
   }
 }
 
 /* @brief Rotates the robot to a particular orientation (angle within a circle).
  *
- * @param angle - (360 from CCW)
- * @return void
+ * @param angle - Angle to rotate through in specified direction.
+ * @param dir - The direction to rotate
+ * 
  */
-void rotateRobot(int16_t angle){
+void rotateRobot(uint16_t angle, TDIRECTION dir){
   uint16union_t rxdata;
-  uint16_t angleMoved = 0;
+  int16_t angleMoved = 0;
   
   //Get current angle moved to reset the angle moved count
   USART_OutChar(OP_SENSORS); USART_OutChar(OP_SENS_ANGLE);
-  rxdata.s.Hi = USART_InChar(); 
-  rxdata.s.Lo = USART_InChar(); //Dummy read of both bytes to clear the receive buffer
+  rxdata.s.Hi = USART_InChar(); //Dummy read of both bytes to clear the receive buffer
+  rxdata.s.Lo = USART_InChar(); 
 
-  //Initiate a drive command @50mm/s and make the robot turn on the spot CW (0xFFFF)
-  rotate(210, false);
-  LCD_Print(angle, BM_RIGHT);
+  if (dir == DIR_CCW){
+    drive(-210, 210); //Make the robot turn CCW @ 210mm/s
+  } else {
+    drive(210, -210); //Make the robot turn CW @ 210mm/s
+  }
   
   while ((angleMoved < angle) && !sensorTriggered())
   {
@@ -146,11 +134,17 @@ void rotateRobot(int16_t angle){
     USART_OutChar(OP_SENSORS); USART_OutChar(OP_SENS_ANGLE);
     rxdata.s.Hi = USART_InChar();
     rxdata.s.Lo = USART_InChar();
-    
-    angleMoved += rxdata.l; //Add the angle moved since the last call to the total count
+
+    if(dir == DIR_CCW){
+      angleMoved += (int16_t) rxdata.l; //CCW direction returns positive angles
+    }else{
+      angleMoved += ((int16_t) rxdata.l * -1); //CW direction returns negative angles
+    }
+
+    LCD_Print(angleMoved, BM_RIGHT);
   }
   
-  rotate(0, false); //Tell the IROBOT to stop rotating
+  drive(0, 0); //Tell the IROBOT to stop rotating
 }
 
 /* @brief Determines if any of the relevant sensors have been triggered.
@@ -195,4 +189,22 @@ bool sensorTriggered(void){
   data = USART_InChar();
 
   return sensorTriggered;
+}
+
+/* @brief Will drive the iRobot, by setting the left and right wheels to different velocities.
+ *
+ * @param leftWheelVel - The velocity of the left side wheel
+ * @param rightWheelVel - The velocity of the right side wheel
+ */
+void drive(int16_t leftWheelVel, int16_t rightWheelVel){
+  int16union_t rightBytes, leftBytes;
+
+  rightBytes.l = rightWheelVel;
+  leftBytes.l = leftWheelVel;
+
+  USART_OutChar(OP_DRIVE_DIRECT);
+  USART_OutChar(rightBytes.s.Hi); //Send the velocity for the right wheel
+  USART_OutChar(rightBytes.s.Lo);
+  USART_OutChar(leftBytes.s.Hi); //Send the velocity for the left wheel
+  USART_OutChar(leftBytes.s.Lo);
 }

@@ -1,11 +1,11 @@
-/*! @file IROBOT.c
+/*! @file IROBOT.h
  *
  *  @brief Module to control the iRobot.
  *
  *  This contains the functions for communicating with the iRobot through the
  *  create open interface.
  *
- *  @author
+ *  @author A.Pope, K.Leone, C.Stewart, J.Lynch
  *  @date 02-09-2016
  */
 #ifndef IROBOT_H
@@ -48,11 +48,6 @@ void IROBOT_DriveStraight(int16_t dist);
  *  @return void
  */
 void IROBOT_DriveSquare(void);
-
-/*! @brief For testing purposes only (Figure-8 mode). 
- *  TODO: May want to remove
- */
-void IROBOT_Test(void);
 #ifdef	__cplusplus
 }
 #endif
