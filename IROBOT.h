@@ -48,6 +48,9 @@ bool IROBOT_DriveStraight(int16_t dist);
  *  @return void
  */
 void IROBOT_DriveSquare(void);
+
+void IROBOT_WallFollow(void);
+
 #ifdef	__cplusplus
 }
 #endif

@@ -114,6 +114,35 @@ void IROBOT_DriveSquare(void){
   }
 }
 
+void IROBOT_WallFollow(void){
+    uint16_t orientation;
+    uint16_t calc;
+    IROBOT_Scan360();
+    orientation = SM_Move(0, DIR_CW);
+    
+    if (orientation >= 150){  //greater than 270 degrees
+        
+        calc = (uint16_t)((orientation * 1.8) - 270);
+//        LCD_PrintInt((int)calc, BM_RIGHT);
+        rotateRobot(calc, DIR_CW);
+        if (calc <= 45){
+            SM_Move((unsigned int)((45 - calc)/1.8), DIR_CW);
+        }
+        else if (calc >= 45){
+            SM_Move((unsigned int)((calc - 45)/1.8),DIR_CCW);
+        }
+        //SM_Move((unsigned int)(45 - calc), DIR_CW);
+        
+    }  //270 degrees
+    
+    if ((orientation <= 150) && (orientation >= 100)){
+        calc = (uint16_t)(270-(orientation * 1.8));//less than 270 degrees 
+        rotateRobot(calc, DIR_CCW);
+        SM_Move((unsigned int)((calc + 45)/1.8),DIR_CW);
+       // SM_Move((unsigned int) ((270 - (orientation*1.8)) + 45), DIR_CCW);
+    }
+}
+
 /* @brief Rotates the robot to a particular orientation (angle within a circle).
  *
  * @param angle - Angle to rotate through in specified direction.
@@ -124,6 +153,7 @@ void IROBOT_DriveSquare(void){
 bool rotateRobot(uint16_t angle, TDIRECTION dir){
   uint16union_t rxdata;
   int16_t angleMoved = 0;
+  
   bool sensorTrig = false;
   
   //Get current angle moved to reset the angle moved count
