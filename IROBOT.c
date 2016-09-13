@@ -26,7 +26,7 @@
 #define OP_SENS_GROUP 1   /* Will return information about bump, wall, cliff, and virtual wall sensors */
 
 /* Private function prototypes */
-void rotateRobot(uint16_t angle, TDIRECTION dir);
+bool rotateRobot(uint16_t angle, TDIRECTION dir);
 bool sensorTriggered(void);
 void drive(int16_t leftWheelVel, int16_t rightWheelVel);
 /* End Private function prototypes */
@@ -70,9 +70,10 @@ void IROBOT_Scan360(void){
   SM_Move(stepsBack, DIR_CCW);
 }
 
-void IROBOT_DriveStraight(int16_t dist){
+bool IROBOT_DriveStraight(int16_t dist){
   uint16union_t rxdata;
   int16_t distanceTravelled = 0;
+  bool sensorTrig = false;
   
   //Get data from the Irobot regarding distance to reset the distance travelled
   USART_OutChar(OP_SENSORS);
@@ -83,7 +84,7 @@ void IROBOT_DriveStraight(int16_t dist){
   drive(200, 200); //Tell the IROBOT to drive straight at [X] mm/s TODO: Will need to insert optimal velocity
   
   //Let the robot drive until it reaches the desired distance
-  while((distanceTravelled < dist) && !sensorTriggered()){
+  while((distanceTravelled < dist) && !sensorTrig){
     //Get distance traveled since last call
     USART_OutChar(OP_SENSORS);
     USART_OutChar(OP_SENS_DIST);
@@ -92,18 +93,24 @@ void IROBOT_DriveStraight(int16_t dist){
     
     distanceTravelled += (int16_t) rxdata.l;
     LCD_PrintInt(distanceTravelled, BM_LEFT);
+    
+    sensorTrig = sensorTriggered();
   }
   
   drive(0, 0); //Tell the IROBOT to stop moving
+  
+  return sensorTrig;
 }
 
 void IROBOT_DriveSquare(void){
+  uint8_t i = 0;
+  bool triggered = false;
   
-  for(int i=0; i<4; i++)
-  {
-    IROBOT_DriveStraight(1000); //Drive straight for 1m
-    rotateRobot(90, DIR_CCW);   //Rotate 90 degs CCW
-    __delay_ms(1000);           //Forcing a delay makes the robot turn more accurately
+  while((i < 4) && !triggered){
+    triggered |= IROBOT_DriveStraight(1000); //Drive straight for 1m
+    triggered |= rotateRobot(90, DIR_CCW);   //Rotate 90 degs CCW
+    __delay_ms(1000);                        //Forcing a delay makes the robot turn more accurately
+    i++;
   }
 }
 
@@ -112,10 +119,12 @@ void IROBOT_DriveSquare(void){
  * @param angle - Angle to rotate through in specified direction.
  * @param dir - The direction to rotate
  * 
+ * @return bool - True if the rotate was interrupted due to sensor triggering
  */
-void rotateRobot(uint16_t angle, TDIRECTION dir){
+bool rotateRobot(uint16_t angle, TDIRECTION dir){
   uint16union_t rxdata;
   int16_t angleMoved = 0;
+  bool sensorTrig = false;
   
   //Get current angle moved to reset the angle moved count
   USART_OutChar(OP_SENSORS); USART_OutChar(OP_SENS_ANGLE);
@@ -128,7 +137,7 @@ void rotateRobot(uint16_t angle, TDIRECTION dir){
     drive(210, -210); //Make the robot turn CW @ 210mm/s
   }
   
-  while ((angleMoved < angle) && !sensorTriggered())
+  while ((angleMoved < angle) && !sensorTrig)
   {
     //Get Angle since last movement
     USART_OutChar(OP_SENSORS); USART_OutChar(OP_SENS_ANGLE);
@@ -140,11 +149,13 @@ void rotateRobot(uint16_t angle, TDIRECTION dir){
     }else{
       angleMoved += ((int16_t) rxdata.l * -1); //CW direction returns negative angles
     }
-
+    
+    sensorTrig = sensorTriggered();
     //LCD_PrintInt(angleMoved, BM_RIGHT);
   }
   
   drive(0, 0); //Tell the IROBOT to stop rotating
+  return sensorTrig;
 }
 
 /* @brief Determines if any of the relevant sensors have been triggered.

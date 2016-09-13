@@ -39,9 +39,9 @@ void IROBOT_Scan360(void);
 
 /*! @brief Drive the robot in a straight line 4m.
  *  
- *  @return void
+ *  @return bool - True if the rotate was interrupted due to sensor triggering
  */
-void IROBOT_DriveStraight(int16_t dist);
+bool IROBOT_DriveStraight(int16_t dist);
 
 /*! @brief Drive the robot in a 1m square.
  *  
