@@ -40,7 +40,7 @@ uint16_t calcOrientation(int a)
   return step;
 }
 
-uint16_t SM_Move(unsigned int steps, TDIRECTION dir) {
+uint16_t SM_Move(uint16_t steps, TDIRECTION dir) {
   static uint16_t orientation = 0; //Initially, we assume the stepper motor is at pos 0
   uint8_t controlByte = 0;
 

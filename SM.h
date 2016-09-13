@@ -33,7 +33,7 @@ bool SM_Init(void);
  * 
  *  @note Assumes that SM_Init has been called.
  */
-uint16_t SM_Move(unsigned int steps, TDIRECTION dir);
+uint16_t SM_Move(uint16_t steps, TDIRECTION dir);
 
 #ifdef	__cplusplus
 }
