@@ -141,7 +141,7 @@ void rotateRobot(uint16_t angle, TDIRECTION dir){
       angleMoved += ((int16_t) rxdata.l * -1); //CW direction returns negative angles
     }
 
-    LCD_PrintInt(angleMoved, BM_RIGHT);
+    //LCD_PrintInt(angleMoved, BM_RIGHT);
   }
   
   drive(0, 0); //Tell the IROBOT to stop rotating
@@ -162,21 +162,21 @@ bool sensorTriggered(void){
   //1. Packet ID: 7 (Bump and Wheel drop)
   data = USART_InChar();
   sensorTriggered = (data & 0b00000011);   //We only care about the bump data so AND with mask
-
+  
   //2. Packet ID: 8 (Wall)
   data = USART_InChar();  //Do dummy read as we don't care about this sensor
 
   //3. Packet ID: 9 (Cliff Left)
-  sensorTriggered &= USART_InChar();
+  sensorTriggered |= USART_InChar();
 
   //4. Packet ID: 10 (Cliff Front Left)
-  sensorTriggered &= USART_InChar();
+  sensorTriggered |= USART_InChar();
 
   //5. Packet ID: 11 (Cliff Front Right)
-  sensorTriggered &= USART_InChar();
+  sensorTriggered |= USART_InChar();
 
   //6. Packet ID: 12 (Cliff Right)
-  sensorTriggered &= USART_InChar();
+  sensorTriggered |= USART_InChar();
 
   //7. Packet ID: 13 (Virtual Wall)
   data = USART_InChar();  //Do dummy read as we don't care about this sensor
@@ -187,7 +187,7 @@ bool sensorTriggered(void){
   //9/10. Packet ID: 15-16 (Unused)
   data = USART_InChar();  //Do dummy read as we don't care about these sensors
   data = USART_InChar();
-
+  
   return sensorTriggered;
 }
 
