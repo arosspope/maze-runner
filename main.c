@@ -42,11 +42,8 @@ void b3CB(void) {
 }
 
 void b4CB(void) {
-  //int x =0;
-  //LCD_PrintStr("WALL", TOP_LEFT); //Print the MODE
+  LCD_PrintStr("WALL", TOP_LEFT); //Print the MODE
   IROBOT_WallFollow();
-  //x = x + 1;
-  //LCD_PrintStr("DONE", TOP_LEFT); //Print the MODE
 }
 
 /* The list of all buttons in the system */

@@ -115,32 +115,29 @@ void IROBOT_DriveSquare(void){
 }
 
 void IROBOT_WallFollow(void){
-    uint16_t orientation;
-    uint16_t calc;
-    IROBOT_Scan360();
-    orientation = SM_Move(0, DIR_CW);
-    
-    if (orientation >= 150){  //greater than 270 degrees
-        
-        calc = (uint16_t)((orientation * 1.8) - 270);
-//        LCD_PrintInt((int)calc, BM_RIGHT);
-        rotateRobot(calc, DIR_CW);
-        if (calc <= 45){
-            SM_Move((unsigned int)((45 - calc)/1.8), DIR_CW);
-        }
-        else if (calc >= 45){
-            SM_Move((unsigned int)((calc - 45)/1.8),DIR_CCW);
-        }
-        //SM_Move((unsigned int)(45 - calc), DIR_CW);
-        
-    }  //270 degrees
-    
-    if ((orientation <= 150) && (orientation >= 100)){
-        calc = (uint16_t)(270-(orientation * 1.8));//less than 270 degrees 
-        rotateRobot(calc, DIR_CCW);
-        SM_Move((unsigned int)((calc + 45)/1.8),DIR_CW);
-       // SM_Move((unsigned int) ((270 - (orientation*1.8)) + 45), DIR_CCW);
+  uint16_t orientation, moveAngle;
+  
+  //Find the position of the closest wall (should be left hand side of robot)
+  IROBOT_Scan360();
+  orientation = SM_Move(0, DIR_CW); //Move SM 0 steps to get its current orientation
+
+  if(orientation >= 150){ //greater than 270 degrees (from 0 CW)
+    moveAngle = (uint16_t) ((orientation * 1.8) - 270);
+    rotateRobot(moveAngle, DIR_CW); //Rotate robot so its parrallel with the wall
+
+    //Calculate steps required to get IR sensor pointing 45 degs from 360 (CCW)
+    if(moveAngle <= 45){
+      SM_Move((uint16_t)((45 - moveAngle)/1.8), DIR_CW);
+    }else{ //Its greater than 45 degs
+      SM_Move((uint16_t)((moveAngle - 45)/1.8), DIR_CCW);
     }
+
+  } 
+  else if ((orientation <= 150) && (orientation >= 100)) { //Less than 270 degs
+    moveAngle = (uint16_t)(270 - (orientation * 1.8));
+    rotateRobot(moveAngle, DIR_CCW);
+    SM_Move((uint16_t)((moveAngle + 45) / 1.8 ), DIR_CW);
+  }
 }
 
 /* @brief Rotates the robot to a particular orientation (angle within a circle).

@@ -49,8 +49,11 @@ bool IROBOT_DriveStraight(int16_t dist);
  */
 void IROBOT_DriveSquare(void);
 
+/*! @brief Perform a Wall-follow (left hand-side only)
+ *
+ *  @return void
+ */
 void IROBOT_WallFollow(void);
-
 #ifdef	__cplusplus
 }
 #endif

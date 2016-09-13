@@ -9,7 +9,6 @@
  */
 #include <math.h>
 #include "IR.h"
-#include "LCD.h" //TODO: - Will need to be removed
 #include "ADC.h"
 
 bool IR_Init(void) {
