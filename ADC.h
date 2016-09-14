@@ -4,7 +4,7 @@
  *
  *  This contains the functions for converting analog to digital.
  *
- *  @author Andrew Pope (sn: 11655949)
+ *  @author A.Pope
  *  @date 02-08-2016
  */
 #ifndef ADC_H

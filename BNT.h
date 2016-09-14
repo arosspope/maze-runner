@@ -2,7 +2,7 @@
  *
  *  @brief Routines for controlling buttons on the PIC16F87XA.
  *
- *  @author Andrew Pope (sn: 11655949)
+ *  @author A.Pope
  *  @date 02-08-2016
  */
 #ifndef BNT_H

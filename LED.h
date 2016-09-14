@@ -4,10 +4,9 @@
  *
  *  This contains the functions for operating the LEDs.
  *
- *  @author Andrew Pope (sn: 11655949)
+ *  @author A.Pope
  *  @date 02-08-2016
  */
-
 #ifndef LED_H
 #define	LED_H
 

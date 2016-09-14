@@ -4,10 +4,9 @@
  *
  *  This contains the functions for printing information to the LCD peripheral.
  *
- *  @author Andrew Pope (sn: 11655949)
+ *  @author A.Pope
  *  @date 02-08-2016
  */
-
 #ifndef LCD_H
 #define	LCD_H
 

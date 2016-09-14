@@ -4,7 +4,7 @@
  *
  *  This module is a HAL (Hardware abstraction Layer) for the SPI on the PIC.
  *  It facilitates communication between hardware and software for other modules
- *  such as SM, IR, and EEPROM.
+ *  such as SM and EEPROM.
  *
  *  @author Andrew.P
  *  @date 02-08-2016

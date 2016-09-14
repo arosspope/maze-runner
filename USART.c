@@ -33,7 +33,7 @@ bool USART_Init(void)
   TXSTAbits.TXEN = 0;
   TXSTAbits.TXEN = 1; 
   
-	SPBRG = BAUD_57600; //Baud rate 57600
+  SPBRG = BAUD_57600; //Baud rate 57600
   
   return true;
 }
@@ -43,7 +43,7 @@ uint8_t USART_InChar(void)
   uint8_t data;
   
   while(!(PIR1bits.RCIF));  //Wait for data to become available
-	data = RCREG;
+  data = RCREG;
   
   //If error during transmission, make sure to clear in software
   if(RCSTAbits.OERR){
@@ -57,5 +57,5 @@ uint8_t USART_InChar(void)
 void USART_OutChar(const uint8_t data)
 {
   while(!(TXSTAbits.TRMT)); //While buffer is not empty, wait
-	TXREG=data;               //load register with data to be transmitted
+  TXREG=data;               //load register with data to be transmitted
 }

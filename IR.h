@@ -1,13 +1,12 @@
-/*! @file IR.h
+/*! @file IR.c
  *
  *  @brief Routines for the IR sensor.
  *
  *  This contains the functions for operating Infra-Red (IR) distance sensor.
  *
- *  @author Andrew Pope (sn: 11655949)
+ *  @author Andrew.P, Andrew.T
  *  @date 02-08-2016
  */
-
 #ifndef IR_H
 #define	IR_H
 
