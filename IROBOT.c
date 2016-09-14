@@ -117,8 +117,16 @@ void IROBOT_DriveSquare(void){
 
 void IROBOT_WallFollow(void){
   double tolerance, dist;    //dist variable stores the IR sensor reading
+  uint16_t orientation;
   
-  wallAlign();               //align the robot parallel to closest wall  
+  //Reset IR sensor to pos 0
+  orientation = SM_Move(0, DIR_CW);
+  SM_Move(orientation, DIR_CCW);
+  
+  //Find the position of the closest wall (should be left hand side of robot) and align
+  IROBOT_Scan360();
+  wallAlign();
+  
   tolerance = IR_Measure();  //store current distance reading at a 45 degree angle to the wall from IR sensor 
   dist = tolerance;
   
@@ -139,6 +147,7 @@ void IROBOT_WallFollow(void){
     
     LCD_PrintInt((int)dist, TOP_RIGHT); //Print to IR to screen
   }
+  
   drive (0,0);  //if sensor is triggered, stop the IROBOT
 }
 
@@ -148,8 +157,6 @@ void IROBOT_WallFollow(void){
 void wallAlign(void){
   uint16_t orientation, moveAngle;
   
-  //Find the position of the closest wall (should be left hand side of robot)
-  IROBOT_Scan360();
   orientation = SM_Move(0, DIR_CW); //Move SM 0 steps to get its current orientation
 
   if(orientation >= 150){ //greater than 270 degrees (from 0 CW)
@@ -164,7 +171,7 @@ void wallAlign(void){
     }
 
   } 
-  else if ((orientation <= 150) && (orientation >= 100)) { //Less than 270 degs
+  else if ((orientation <= 150)){ //&& (orientation >= 100)) { //Less than 270 degs
     moveAngle = (uint16_t)(270 - (orientation * SM_F_STEP_RESOLUTION));
     rotateRobot(moveAngle, DIR_CCW);
     SM_Move((uint16_t)((moveAngle + 45) / SM_F_STEP_RESOLUTION), DIR_CW);
