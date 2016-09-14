@@ -29,6 +29,7 @@
 bool rotateRobot(uint16_t angle, TDIRECTION dir);
 bool sensorTriggered(void);
 void drive(int16_t leftWheelVel, int16_t rightWheelVel);
+void wallAlign(void);
 /* End Private function prototypes */
 
 bool IROBOT_Init(void){
@@ -114,7 +115,7 @@ void IROBOT_DriveSquare(void){
   }
 }
 
-void IROBOT_WallFollow(void){
+void wallAlign(void){
   uint16_t orientation, moveAngle;
   
   //Find the position of the closest wall (should be left hand side of robot)
@@ -138,6 +139,31 @@ void IROBOT_WallFollow(void){
     rotateRobot(moveAngle, DIR_CCW);
     SM_Move((uint16_t)((moveAngle + 45) / 1.8 ), DIR_CW);
   }
+}
+
+void IROBOT_WallFollow(void){
+  double tolerance, dist;
+  
+  wallAlign();
+  tolerance = IR_Measure();
+  dist = tolerance;
+  
+  while (!sensorTriggered()){
+    while ((dist < (tolerance + 5)) && (dist > (tolerance - 5))){
+      drive(200,200);
+      dist = IR_Measure();
+    }
+    
+    if (dist < (tolerance - 5)){
+      drive(200, 150);
+    }
+    if (dist > (tolerance + 5)){ 
+      drive (150, 200);
+    }
+    
+    dist = IR_Measure();
+  }
+  drive (0,0);
 }
 
 /* @brief Rotates the robot to a particular orientation (angle within a circle).
