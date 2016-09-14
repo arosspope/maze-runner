@@ -82,7 +82,7 @@ bool IROBOT_DriveStraight(int16_t dist){
   rxdata.s.Hi = USART_InChar(); //Dummy read of sensor values
   rxdata.s.Lo = USART_InChar();
   
-  drive(200, 200); //Tell the IROBOT to drive straight at [X] mm/s TODO: Will need to insert optimal velocity
+  drive(200, 200); //Tell the IROBOT to drive straight at 200 mm/s
   
   //Let the robot drive until it reaches the desired distance
   while((distanceTravelled < dist) && !sensorTrig){
@@ -124,7 +124,7 @@ void IROBOT_WallFollow(void){
   
   while (!sensorTriggered()){  //if no sensors have been triggered i.e. bumper
     while ((dist < (tolerance + 5)) && (dist > (tolerance - 5))){  //while IR reading is between plus/minus 5mm execute following lines
-      drive(200,200);          //left wheel and right wheel drive same speed.
+      drive(200, 200);          //left wheel and right wheel drive same speed.
       dist = IR_Measure();     //keep checking wall distance.
     }
     
@@ -153,24 +153,23 @@ void wallAlign(void){
   orientation = SM_Move(0, DIR_CW); //Move SM 0 steps to get its current orientation
 
   if(orientation >= 150){ //greater than 270 degrees (from 0 CW)
-    moveAngle = (uint16_t) ((orientation * 1.8) - 270);
+    moveAngle = (uint16_t) ((orientation * SM_F_STEP_RESOLUTION) - 270);
     rotateRobot(moveAngle, DIR_CW); //Rotate robot so its parrallel with the wall
 
     //Calculate steps required to get IR sensor pointing 45 degs from 360 (CCW)
     if(moveAngle <= 45){
-      SM_Move((uint16_t)((45 - moveAngle)/1.8), DIR_CW);
+      SM_Move((uint16_t)((45 - moveAngle)/SM_F_STEP_RESOLUTION), DIR_CW);
     }else{ //Its greater than 45 degs
-      SM_Move((uint16_t)((moveAngle - 45)/1.8), DIR_CCW);
+      SM_Move((uint16_t)((moveAngle - 45)/SM_F_STEP_RESOLUTION), DIR_CCW);
     }
 
   } 
   else if ((orientation <= 150) && (orientation >= 100)) { //Less than 270 degs
-    moveAngle = (uint16_t)(270 - (orientation * 1.8));
+    moveAngle = (uint16_t)(270 - (orientation * SM_F_STEP_RESOLUTION));
     rotateRobot(moveAngle, DIR_CCW);
-    SM_Move((uint16_t)((moveAngle + 45) / 1.8 ), DIR_CW);
+    SM_Move((uint16_t)((moveAngle + 45) / SM_F_STEP_RESOLUTION), DIR_CW);
   }
 }
-
 
 /* @brief Rotates the robot to a particular orientation (angle within a circle).
  *
@@ -210,7 +209,6 @@ bool rotateRobot(uint16_t angle, TDIRECTION dir){
     }
     
     sensorTrig = sensorTriggered();
-    //LCD_PrintInt(angleMoved, BM_RIGHT);
   }
   
   drive(0, 0); //Tell the IROBOT to stop rotating

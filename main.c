@@ -162,7 +162,7 @@ void main(void) {
 
       //IR has a refresh rate of 1HZ in normal operation mode (standby)
       if (IR_FLAG) {
-        LCD_PrintInt((int) IR_Measure(), TOP_RIGHT);  //Print in mm - TODO: should be in cm?
+        LCD_PrintInt((int) IR_Measure(), TOP_RIGHT);  //Print in mm
         IR_FLAG = false;
       }
 
