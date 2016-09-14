@@ -94,7 +94,7 @@ bool IROBOT_DriveStraight(int16_t dist){
     
     distanceTravelled += (int16_t) rxdata.l;
     LCD_PrintInt(distanceTravelled, BM_LEFT);
-    
+    LCD_PrintInt((int)IR_Measure(), TOP_RIGHT);
     sensorTrig = sensorTriggered();
   }
   
@@ -115,6 +115,36 @@ void IROBOT_DriveSquare(void){
   }
 }
 
+void IROBOT_WallFollow(void){
+  double tolerance, dist;    //dist variable stores the IR sensor reading
+  
+  wallAlign();               //align the robot parallel to closest wall  
+  tolerance = IR_Measure();  //store current distance reading at a 45 degree angle to the wall from IR sensor 
+  dist = tolerance;
+  
+  while (!sensorTriggered()){  //if no sensors have been triggered i.e. bumper
+    while ((dist < (tolerance + 5)) && (dist > (tolerance - 5))){  //while IR reading is between plus/minus 5mm execute following lines
+      drive(200,200);          //left wheel and right wheel drive same speed.
+      dist = IR_Measure();     //keep checking wall distance.
+    }
+    
+    if (dist < (tolerance - 5)){  //if robot is closer to the wall than the specified distance.
+      drive(200, 150);            //slow down the right wheel.
+    }
+    if (dist > (tolerance + 5)){  //if the robot is further away from the wall than specified distance. 
+      drive (150, 200);           //slow down the left wheel. 
+    }
+    
+    dist = IR_Measure();          //keep checking wall distance.
+    
+    LCD_PrintInt((int)dist, TOP_RIGHT); //Print to IR to screen
+  }
+  drive (0,0);  //if sensor is triggered, stop the IROBOT
+}
+
+/* @brief Will rotate the robot and align the robot parallel to the closest wall. 
+ * 
+ */
 void wallAlign(void){
   uint16_t orientation, moveAngle;
   
@@ -141,30 +171,6 @@ void wallAlign(void){
   }
 }
 
-void IROBOT_WallFollow(void){
-  double tolerance, dist;
-  
-  wallAlign();
-  tolerance = IR_Measure();
-  dist = tolerance;
-  
-  while (!sensorTriggered()){
-    while ((dist < (tolerance + 5)) && (dist > (tolerance - 5))){
-      drive(200,200);
-      dist = IR_Measure();
-    }
-    
-    if (dist < (tolerance - 5)){
-      drive(200, 150);
-    }
-    if (dist > (tolerance + 5)){ 
-      drive (150, 200);
-    }
-    
-    dist = IR_Measure();
-  }
-  drive (0,0);
-}
 
 /* @brief Rotates the robot to a particular orientation (angle within a circle).
  *
