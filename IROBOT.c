@@ -134,11 +134,10 @@ void IROBOT_WallFollow(void){
     if((dist < (tolerance + 5)) && (dist > (tolerance - 5))){  //while IR reading is between plus/minus 5mm execute following lines
       drive(200, 200);          //left wheel and right wheel drive same speed.
     }
-    
-    if (dist < (tolerance - 5)){  //if robot is closer to the wall than the specified distance.
+    else if (dist < (tolerance - 5)){  //if robot is closer to the wall than the specified distance.
       drive(200, 150);            //slow down the right wheel.
     }
-    if (dist > (tolerance + 5)){  //if the robot is further away from the wall than specified distance. 
+    else{  //if the robot is further away from the wall than specified distance. 
       drive (150, 200);           //slow down the left wheel. 
     }
     
