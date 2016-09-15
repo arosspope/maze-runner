@@ -131,9 +131,8 @@ void IROBOT_WallFollow(void){
   dist = tolerance;
   
   while (!sensorTriggered()){  //if no sensors have been triggered i.e. bumper
-    while ((dist < (tolerance + 5)) && (dist > (tolerance - 5))){  //while IR reading is between plus/minus 5mm execute following lines
+    if((dist < (tolerance + 5)) && (dist > (tolerance - 5))){  //while IR reading is between plus/minus 5mm execute following lines
       drive(200, 200);          //left wheel and right wheel drive same speed.
-      dist = IR_Measure();     //keep checking wall distance.
     }
     
     if (dist < (tolerance - 5)){  //if robot is closer to the wall than the specified distance.
