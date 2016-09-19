@@ -10,6 +10,9 @@
  *  best to use the macros 'EEPROM_WRITE' 'EEPROM_READ' to save a level of stack.
  *  This does however, take up slightly more memory on the PIC.
  *
+ *  TODO: Need to determine whether using (or not) using the macro will actually
+ *  save a stack level.
+ *
  *  @author A.Pope
  *  @date 02-08-2016
  */
@@ -35,4 +38,3 @@ extern "C" {
 #endif
 
 #endif	/* EEPROM_H */
-

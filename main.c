@@ -12,9 +12,8 @@
 /* User defined libaries */
 #include "LED.h"
 #include "LCD.h"
-#include "IR.h"
+#include "IR.h" //TODO: Will main actually need to know about the IR sensor?
 #include "BNT.h"
-#include "USART.h"
 #include "IROBOT.h"
 #include "types.h"
 
@@ -25,33 +24,12 @@
 #define HEARTBEAT_DELAY    500  //Heartbeat of 500ms
 bool IR_FLAG = false;           //Used to signal the main loop when to perform a distance measurement
 
-/* Callback functions for each button within the system */
-void b1CB(void) {
-  LCD_PrintStr("SCAN", TOP_LEFT); //Print the MODE
-  IROBOT_Scan360();
-}
-
-void b2CB(void) {
-  LCD_PrintStr("DRIVE", TOP_LEFT); //Print the MODE
-  IROBOT_DriveStraight(4000);
-}
-
-void b3CB(void) {
-  LCD_PrintStr("BOX", TOP_LEFT); //Print the MODE
-  IROBOT_DriveSquare();
-}
-
-void b4CB(void) {
-  LCD_PrintStr("WALL", TOP_LEFT); //Print the MODE
-  IROBOT_WallFollow();
-}
-
-/* The list of all buttons in the system */
+/* The list of all buttons in the system
+ * Note - Rather than using the callback, we will hardcode what happens on button
+ * press into the main loop. This is to save a level of stack depth in the code.
+ */
 button_t buttonList[] = {
-  {false, false, BNT_DEB_COUNT, &b1CB},
-  {false, false, BNT_DEB_COUNT, &b2CB},
-  {false, false, BNT_DEB_COUNT, &b3CB},
-  {false, false, BNT_DEB_COUNT, &b4CB}
+  {false, false, BNT_DEB_COUNT, 0},
 };
 
 void interrupt isr(void) {
@@ -84,24 +62,6 @@ void interrupt isr(void) {
         BNT_Debounce(&buttonList[0]); //If button is currently pressed debounce
       } else {
         BNT_ResetDebounce(&buttonList[0]); //If released, reset the debounce count
-      }
-
-      if (BNT_PB2) { //Button 2
-        BNT_Debounce(&buttonList[1]);
-      } else {
-        BNT_ResetDebounce(&buttonList[1]);
-      }
-
-      if (BNT_PB3) { //Button 3
-        BNT_Debounce(&buttonList[2]);
-      } else {
-        BNT_ResetDebounce(&buttonList[2]);
-      }
-
-      if (BNT_PB4) { //Button 4
-        BNT_Debounce(&buttonList[3]);
-      } else {
-        BNT_ResetDebounce(&buttonList[3]);
       }
     }
   }
@@ -166,13 +126,13 @@ void main(void) {
         IR_FLAG = false;
       }
 
-      //Loop through button list, and check if button was pressed
-      for (i = 0; i < sizeof (buttonList) / sizeof (button_t); i++) {
-        if (buttonList[i].bntPressed) {
-          //If button was pressed, invoke the appropriate callback function
-          buttonList[i].bntPressed = false;
-          buttonList[i].cm();
-        }
+      //Check to see if button was pressed
+      if(buttonList[0].bntPressed){
+        buttonList[0].bntPressed = false;
+        
+        //TODO: Test code - for wall follow
+        LCD_PrintStr("WALL", TOP_LEFT); //Print the MODE
+        IROBOT_WallFollow();
       }
     }
   }
