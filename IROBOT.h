@@ -30,30 +30,14 @@ bool IROBOT_Init(void);
  */
 void IROBOT_Start(void);
 
-/*! @brief Performs a 360 scan of the environment using the IR sensor. At the
- *  completion of the scan, the sensor will pointed towards the closest object
- *
- *  @return void
- */
-void IROBOT_Scan360(void);
-
-/*! @brief Drive the robot in a straight line 4m.
- *  
- *  @return bool - True if the rotate was interrupted due to sensor triggering
- */
-bool IROBOT_DriveStraight(int16_t dist);
-
-/*! @brief Drive the robot in a 1m square.
- *  
- *  @return void
- */
-void IROBOT_DriveSquare(void);
-
 /*! @brief Perform a Wall-follow (left hand-side only)
  *
  *  @return void
  */
 void IROBOT_WallFollow(void);
+
+//TODO: Must remove
+void IROBOT_Test(void);
 #ifdef	__cplusplus
 }
 #endif

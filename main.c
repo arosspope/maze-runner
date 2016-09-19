@@ -3,7 +3,7 @@
  * @brief
  *         Main module.
  *         This module contains user's application code.
- *  @author Andrew Pope (sn: 11655949)
+ *  @author A.Pope
  *  @date 02-08-2016
  */
 #include <pic.h>
@@ -12,7 +12,7 @@
 /* User defined libaries */
 #include "LED.h"
 #include "LCD.h"
-#include "IR.h" //TODO: Will main actually need to know about the IR sensor?
+#include "IR.h" //TODO: Will main actually need to know about the IR sensor? (should we read IR at all?)
 #include "BNT.h"
 #include "IROBOT.h"
 #include "types.h"
@@ -105,7 +105,6 @@ bool systemInit(void){
 }
 
 void main(void) {
-  unsigned int i;
   bool initOk;
 
   di(); //Globally disable interrupts during systemInit
