@@ -132,6 +132,7 @@ void main(void) {
         //TODO: Test code - for wall follow
         LCD_PrintStr("WALL", TOP_LEFT); //Print the MODE
         IROBOT_WallFollow();
+        IROBOT_Test();
       }
     }
   }

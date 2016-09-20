@@ -6,12 +6,9 @@
  *  memory on the PIC.
  * 
  *  @note Implementation detail for the EEPROM write and read functionality 
- *  is defined in the <xc.h> library. Within the context of this project, it is
- *  best to use the macros 'EEPROM_WRITE' 'EEPROM_READ' to save a level of stack.
- *  This does however, take up slightly more memory on the PIC.
+ *  is defined in the <xc.h> library.
  *
- *  TODO: Need to determine whether using (or not) using the macro will actually
- *  save a stack level.
+ *  TODO: Need to determine whether using (or not) using the function 'eeprom_write/read' will effect stack level
  *
  *  @author A.Pope
  *  @date 02-08-2016
@@ -26,12 +23,16 @@ extern "C" {
 #include "types.h"
 
 /* Starting addresses for bytes of data in FLASH */
-#define EEPROM_SONG1_ADDR 0x00
-#define EEPROM_SONG2_ADDR 0x10
-#define EEPROM_SONG_SIZE 16 //Each song can be 16 notes
+/* Song Address Ranges */
+#define EEPM_SONG_SIZE  16   //Each song can be 16 notes (16 bytes in Flash mem)
+#define EEPM_SONG0_ADDR 0x00 //Address offset for song0
+#define EEPM_SONG1_ADDR 0x10 //Address offset for song1
+#define EEPM_SONG2_ADDR 0x20 //Address offset for song2
+#define EEPM_SONG3_ADDR 0x30 //Address offset for song3
 
-#define EEPROM_MAP_ADDR 0x20
-#define EEPROM_MAP_SIZE 10 //TODO: must determine map size
+/* Maze map inforamtion*/
+#define EEPM_MAP_SIZE   20   //TODO: must determine map size
+#define EEPM_MAP_ADDR   0x40 //Address offset for the map
 
 #ifdef	__cplusplus
 }

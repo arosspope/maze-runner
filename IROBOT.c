@@ -9,14 +9,31 @@
  *  @date 02-09-2016
  */
 #include "IR.h" //TODO: Ensure IR is being initialised here
+#include "EEPROM.h"
 #include "USART.h"
 #include "MOVE.h"
 #include "SM.h"
 #include "LCD.h" //TODO: Remove references to LCD
 #include "IROBOT.h"
 
-#define OP_START  128
-#define OP_FULL   132
+/* Loading Song Notes to EEPROM (pre-loading only) - TODO: Choose notes */
+__EEPROM_DATA(31, 32, 33, 31, 35, 31, 32, 33);  //Song 0 - ADDR offset: 0x00
+__EEPROM_DATA(33, 34, 35, 33, 32, 31, 33, 34);
+__EEPROM_DATA(1, 2, 3, 4, 5, 6, 7, 8);          //Song 1 - ADDR offset: 0x10
+__EEPROM_DATA(9, 10, 11, 12, 13, 14, 15, 16);
+__EEPROM_DATA(1, 2, 3, 4, 5, 6, 7, 8);          //Song 2 - ADDR offset: 0x20
+__EEPROM_DATA(9, 10, 11, 12, 13, 14, 15, 16);
+__EEPROM_DATA(1, 2, 3, 4, 5, 6, 7, 8);          //Song 3 - ADDR offset: 0x30
+__EEPROM_DATA(9, 10, 11, 12, 13, 14, 15, 16);
+
+/* Loading Map data to EEPROM; ADDR offset 0x40 - TODO: Must do */
+
+#define OP_START        128
+#define OP_FULL         132
+#define OP_LOAD_SONG    140
+#define OP_PLAY_SONG    141
+#define OP_SENSORS      142
+#define OP_SONG_PLAYING 37
 
 //Optimal speeds for driving the iROBOT
 #define DRIVE_TOP_SPEED   200
@@ -27,6 +44,8 @@
 static void wallAlign(uint16_t wallLocation);
 static uint16_t closestObject(void);
 static void resetIRPos(void);
+static void loadSongs(void);
+static void playSong(uint8_t songNo);
 /* End Private function prototypes */
 
 bool IROBOT_Init(void){
@@ -34,14 +53,15 @@ bool IROBOT_Init(void){
 }
 
 void IROBOT_Start(void){
-  //Put the IROBOT in full control mode
+  //Put the IROBOT in full control mode and load songs
   USART_OutChar(OP_START);
   USART_OutChar(OP_FULL);
+  loadSongs();
 }
 
 //TODO: Must remove - test routine, used for testing specific bits of code.
 void IROBOT_Test(void){
-
+  playSong(0);
 }
 
 void IROBOT_WallFollow(void){
@@ -138,4 +158,45 @@ static uint16_t closestObject(void){
 static void resetIRPos(void){
   uint16_t orientation = SM_Move(0, DIR_CW);  //Get where the IR is pointing
   SM_Move(orientation, DIR_CCW);              //Move back those number of steps
+}
+
+/*! @brief Loads the 4 pre-defined songs onto the iRobot
+ *
+ */
+static void loadSongs(void){
+  uint8_t i, j, addrOffset = 0;
+
+  //Load the four songs on the iRobot Create
+  for(i = 0; i < 4; i++)
+  {
+    USART_OutChar(OP_LOAD_SONG);
+    USART_OutChar(i);             //Song number
+    USART_OutChar(EEPM_SONG_SIZE);//Song Length
+
+    for(j = 0; j < EEPM_SONG_SIZE; j++)
+    {
+      USART_OutChar(eeprom_read((addrOffset + j))); //Load the note stored in flash mem
+      USART_OutChar(32); //TODO: Uniform note duration? 32 = half-second
+    }
+
+    addrOffset += EEPM_SONG_SIZE; //Increment the address offset for the next song
+  }
+}
+
+/*! @brief Loads the 4 pre-defined songs onto the iRobot
+ *
+ *  @param songNo - The song to play (0 - 3)
+ */
+static void playSong(uint8_t songNo){
+  bool songPlaying;
+
+  //Wait until previous song has finished playing
+  do {
+    USART_OutChar(OP_SENSORS);
+    USART_OutChar(OP_SONG_PLAYING);
+    songPlaying = USART_InChar();
+  } while(songPlaying);
+
+  USART_OutChar(OP_PLAY_SONG);
+  USART_OutChar(songNo);
 }
