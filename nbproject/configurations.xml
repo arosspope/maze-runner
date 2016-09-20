@@ -16,6 +16,7 @@
       <itemPath>IROBOT.h</itemPath>
       <itemPath>EEPROM.h</itemPath>
       <itemPath>MOVE.h</itemPath>
+      <itemPath>OPCODES.h</itemPath>
     </logicalFolder>
     <logicalFolder name="LinkerScript"
                    displayName="Linker Files"

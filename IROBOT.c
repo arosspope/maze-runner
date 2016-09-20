@@ -14,6 +14,7 @@
 #include "MOVE.h"
 #include "SM.h"
 #include "LCD.h" //TODO: Remove references to LCD
+#include "OPCODES.h"
 #include "IROBOT.h"
 
 /* Loading Song Notes to EEPROM (pre-loading only) - TODO: Choose notes */
@@ -27,13 +28,6 @@ __EEPROM_DATA(1, 2, 3, 4, 5, 6, 7, 8);          //Song 3 - ADDR offset: 0x30
 __EEPROM_DATA(9, 10, 11, 12, 13, 14, 15, 16);
 
 /* Loading Map data to EEPROM; ADDR offset 0x40 - TODO: Must do */
-
-#define OP_START        128
-#define OP_FULL         132
-#define OP_LOAD_SONG    140
-#define OP_PLAY_SONG    141
-#define OP_SENSORS      142
-#define OP_SONG_PLAYING 37
 
 //Optimal speeds for driving the iROBOT
 #define DRIVE_TOP_SPEED   200

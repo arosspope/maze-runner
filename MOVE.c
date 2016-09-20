@@ -9,14 +9,8 @@
  *  @date 02-09-2016
  */
 #include "USART.h"
+#include "OPCODES.h"
 #include "MOVE.h"
-
-#define OP_DRIVE      137
-#define OP_DRIVE_DIRECT 145
-#define OP_SENSORS    142
-#define OP_SENS_DIST  19  /* Distance travelled since last call */
-#define OP_SENS_ANGLE 20  /* Angle turned since last call */
-#define OP_SENS_GROUP 1   /* Will return information about bump, wall, cliff, and virtual wall sensors */
 
 bool MOVE_Init(void){
   return true; //No initialisation needed for the move module
