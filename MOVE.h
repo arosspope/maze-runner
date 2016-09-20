@@ -25,12 +25,13 @@ bool MOVE_Init(void);
 
 /* @brief Rotates the robot to a particular orientation (angle within a circle).
  *
+ * @param velocity - The velocity to turn at (positive value only).
  * @param angle - Angle to rotate through in specified direction.
  * @param dir - The direction to rotate
  *
  * @return bool - True if movement was interrupted by sensor
  */
-bool MOVE_Rotate(uint16_t angle, TDIRECTION dir);
+bool MOVE_Rotate(uint16_t velocity, uint16_t angle, TDIRECTION dir);
 
 /*! @brief Drive the robot in a straight line.
  *

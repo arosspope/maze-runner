@@ -21,6 +21,7 @@
 //Optimal speeds for driving the iROBOT
 #define DRIVE_TOP_SPEED   200
 #define DRIVE_TURN_SPEED  150
+#define DRIVE_ROTATE_SPEED 210
 
 /* Private function prototypes */
 static void wallAlign(uint16_t wallLocation);
@@ -80,7 +81,7 @@ static void wallAlign(uint16_t wallLocation){
 
   if(wallLocation >= 150){ //greater than 270 degrees (from 0 CW)
     moveAngle = (uint16_t) ((wallLocation * SM_F_STEP_RESOLUTION) - 270);
-    MOVE_Rotate(moveAngle, DIR_CW); //Rotate robot so its parrallel with the wall
+    MOVE_Rotate(DRIVE_ROTATE_SPEED, moveAngle, DIR_CW); //Rotate robot so its parrallel with the wall
 
     //Calculate steps required to get IR sensor pointing 45 degs from 360 (CCW)
     if(moveAngle <= 45){
@@ -92,7 +93,7 @@ static void wallAlign(uint16_t wallLocation){
   } 
   else if ((wallLocation <= 150)){
     moveAngle = (uint16_t)(270 - (wallLocation * SM_F_STEP_RESOLUTION));
-    MOVE_Rotate(moveAngle, DIR_CCW);
+    MOVE_Rotate(DRIVE_ROTATE_SPEED, moveAngle, DIR_CCW);
     SM_Move((uint16_t)((moveAngle + 45) / SM_F_STEP_RESOLUTION), DIR_CW);
   }
 }

@@ -55,7 +55,7 @@ bool MOVE_Straight(int16_t velocity, uint16_t distance){
   return sensorTrig;
 }
 
-bool MOVE_Rotate(uint16_t angle, TDIRECTION dir){
+bool MOVE_Rotate(uint16_t velocity, uint16_t angle, TDIRECTION dir){
   uint16union_t rxdata;
   int16_t angleMoved = 0;
   bool sensorTrig = false;
@@ -65,9 +65,9 @@ bool MOVE_Rotate(uint16_t angle, TDIRECTION dir){
   USART_InChar(); USART_InChar();  //Dummy read to clear recieve buffer
 
   if (dir == DIR_CCW){
-    MOVE_DirectDrive(-210, 210); //Make the robot turn CCW @ 210mm/s
+    MOVE_DirectDrive((velocity * -1), velocity); //Make the robot turn CCW @ 210mm/s
   } else {
-    MOVE_DirectDrive(210, -210); //Make the robot turn CW @ 210mm/s
+    MOVE_DirectDrive(velocity, (velocity * -1)); //Make the robot turn CW @ 210mm/s
   }
 
   while ((angleMoved < angle) && !sensorTrig)
