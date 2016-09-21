@@ -26,6 +26,9 @@ extern "C" {
 #define OP_DRIVE_DIRECT 145
 /* Codes for Sensor information */
 #define OP_SENSORS      142
+#define OP_QUERY        149
+#define OP_SENS_VWALL   13
+#define OP_SENS_BUMP    7
 #define OP_SENS_GROUP   1   //Will return information about bump, wall, cliff, and virtual wall sensors
 #define OP_SENS_DIST    19  //Distance travelled since last call
 #define OP_SENS_ANGLE   20  //Angle turned since last call

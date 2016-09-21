@@ -18,6 +18,7 @@ bool MOVE_Init(void){
 
 bool MOVE_Straight(int16_t velocity, uint16_t distance){
   uint16union_t rxdata;
+  SensorsStatus_t sensStatus;
   int16_t distanceTravelled = 0;
   bool sensorTrig = false;
 
@@ -41,7 +42,7 @@ bool MOVE_Straight(int16_t velocity, uint16_t distance){
       distanceTravelled += ((int16_t)rxdata.l * -1); //Negative vel returns neg dist (must normalise)
     }
 
-    sensorTrig = MOVE_CheckSensor();
+    sensorTrig = MOVE_CheckSensor(&sensStatus);
   }
 
   MOVE_DirectDrive(0, 0); //Tell the IROBOT to stop moving
@@ -51,6 +52,7 @@ bool MOVE_Straight(int16_t velocity, uint16_t distance){
 
 bool MOVE_Rotate(uint16_t velocity, uint16_t angle, TDIRECTION dir){
   uint16union_t rxdata;
+  SensorsStatus_t sensStatus;
   int16_t angleMoved = 0;
   bool sensorTrig = false;
 
@@ -77,7 +79,7 @@ bool MOVE_Rotate(uint16_t velocity, uint16_t angle, TDIRECTION dir){
       angleMoved += ((int16_t) rxdata.l * -1); //CW direction returns negative angles
     }
 
-    sensorTrig = MOVE_CheckSensor();
+    sensorTrig = MOVE_CheckSensor(&sensStatus);
   }
 
   MOVE_DirectDrive(0, 0); //Tell the IROBOT to stop rotating
@@ -97,42 +99,24 @@ void MOVE_DirectDrive(int16_t leftWheelVel, int16_t rightWheelVel){
   USART_OutChar(leftBytes.s.Lo);
 }
 
-bool MOVE_CheckSensor(void){
+bool MOVE_CheckSensor(SensorsStatus_t * sensStatus){
   uint8_t data;
-  bool sensorTriggered;
 
-  //Tell the Robot to send back information regarding a group of sensors (will send 10 packets)
-  USART_OutChar(OP_SENSORS);
-  USART_OutChar(OP_SENS_GROUP);
-
+  //Tell the Robot to send back information regarding a group of sensors
+  USART_OutChar(OP_QUERY);
+  USART_OutChar(2);         //Get information about 3 sensors TODO: Implement victim
+  USART_OutChar(OP_SENS_BUMP);
+  USART_OutChar(OP_SENS_VWALL);
+  
   //1. Packet ID: 7 (Bump and Wheel drop)
   data = USART_InChar();
-  sensorTriggered = (data & 0b00000011);   //We only care about the bump data so AND with mask
+  sensStatus->sensBits.bump = (data & 0b00000011);   //We only care about the bump data so AND with mask
 
-  //2. Packet ID: 8 (Wall)
-  data = USART_InChar();  //Do dummy read as we don't care about this sensor
+  //2. Packet ID: 13 (Virtual Wall)
+  sensStatus->sensBits.virtWall = USART_InChar();
 
-  //3. Packet ID: 9 (Cliff Left)
-  sensorTriggered |= USART_InChar();
+  //3. TODO: Implement victim
+  sensStatus->sensBits.victim = 0;
 
-  //4. Packet ID: 10 (Cliff Front Left)
-  sensorTriggered |= USART_InChar();
-
-  //5. Packet ID: 11 (Cliff Front Right)
-  sensorTriggered |= USART_InChar();
-
-  //6. Packet ID: 12 (Cliff Right)
-  sensorTriggered |= USART_InChar();
-
-  //7. Packet ID: 13 (Virtual Wall)
-  data = USART_InChar();  //Do dummy read as we don't care about this sensor
-
-  //8. Packet ID: 14 (Low Side Driver and Wheel overcurrents)
-  data = USART_InChar();  //Do dummy read as we don't care about this sensor
-
-  //9/10. Packet ID: 15-16 (Unused)
-  data = USART_InChar();  //Do dummy read as we don't care about these sensors
-  data = USART_InChar();
-
-  return sensorTriggered;
+  return (sensStatus->sensors > 0); //A value greater than 0 indicates one of the sensors have been tripped
 }

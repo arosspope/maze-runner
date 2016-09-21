@@ -60,7 +60,7 @@ void IROBOT_Test(void){
 
 void IROBOT_WallFollow(void){
   double tolerance, dist;    //dist variable stores the IR sensor reading
-
+  SensorsStatus_t sensStatus;
   //Reset IR position, find the closest wall (for left-wall follow) and align
   resetIRPos();
   wallAlign(closestObject());
@@ -69,7 +69,7 @@ void IROBOT_WallFollow(void){
   tolerance = IR_Measure();  
   dist = tolerance;
   
-  while (!MOVE_CheckSensor()){  //if no sensors have been triggered i.e. bumper
+  while (!MOVE_CheckSensor(&sensStatus)){  //if no sensors have been triggered i.e. bumper
     if((dist < (tolerance + 5)) && (dist > (tolerance - 5))){  //while IR reading is between plus/minus 5mm execute following lines
       MOVE_DirectDrive(DRIVE_TOP_SPEED, DRIVE_TOP_SPEED);          //left wheel and right wheel drive same speed.
     }

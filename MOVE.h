@@ -17,6 +17,17 @@ extern "C" {
     
 #include "types.h"
 
+typedef union
+{
+  uint8_t sensors;		/*!< The status bits accessed as a byte. */
+  struct
+  {
+    uint8_t bump     : 1;	/*!< The bump status bit. */
+    uint8_t virtWall : 1;	/*!< The virtWall status bit. */
+    uint8_t victim   : 1;	/*!< The victim status bit. */
+  } sensBits;
+} SensorsStatus_t;   
+
 /*! @brief Sets up the move module before first use
  *
  *  @return bool - TRUE if the move module was successfully initialized.
@@ -53,7 +64,7 @@ void MOVE_DirectDrive(int16_t leftWheelVel, int16_t rightWheelVel);
  *
  * @return TRUE - if one of the sensors have been tripped
  */
-bool MOVE_CheckSensor(void);
+bool MOVE_CheckSensor(SensorsStatus_t * sensStatus);
 #ifdef	__cplusplus
 }
 #endif
