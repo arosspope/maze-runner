@@ -34,6 +34,27 @@ typedef enum {
  */    
 bool PATH_Init(void);
 
+/*! @brief Returns the information about a box within the maze.
+ *
+ *  @param x - horizontal co-ordinate
+ *  @param y - vertical co-ordinate
+ *  @param info - User can specify what information they want returned.
+ *
+ *  @return 8-bit number - For all info specifiers (aparat from 'BOX_All') you
+ *                         can treat this return value as a boolean.
+ */
+uint8_t PATH_GetMapInfo(uint8_t x, uint8_t y, TBOX_INFO info);
+
+/*! @brief Updates the maps orientation in relation to the robot.
+ *
+ *  This function MUST be called every time the robot rotates in a particular direction.
+ *
+ *  @param num90Turns - Number of 90 degree turns the robot has moved.
+ *  @param dir - The direction in which the robot rotated in
+ *
+ *  @return void
+ */
+void PATH_UpdateOrient(uint8_t num90Turns, TDIRECTION dir);
 
 #ifdef	__cplusplus
 }

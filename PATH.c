@@ -10,6 +10,8 @@
  */
 #include "PATH.h"
 
+#define WALL_MASK 0b11110000
+#define INFO_MASK 0b00001111
 #define F_MASK 0b10000000
 #define R_MASK 0b01000000
 #define B_MASK 0b00100000
@@ -18,14 +20,17 @@
 #define H_MASK 0b00000100
 #define C_MASK 0b00000010
 
+/* Private Function prototypes */
+uint8_t getNormaliseBoxVal(uint8_t x, uint8_t y);
+/* End prototypes */
 
-static uint8_t RotationFactor; /*< Used to determine the maps direction in relation to the robot (1-4)*/
-static uint8_t Map[5][4] = {
-  {0, 0, 0, 0},
-  {0, 0, 0, 0},
-  {0, 0, 0, 0},
-  {0, 0, 0, 0},
-  {0, 0, 0, 0}
+static uint8_t RotationFactor; /*< Used to determine the maps direction in relation to the robot (0-3)*/
+static uint8_t Map[5][4] = {  /*< Digital map of the maze space */
+  {0b10110000, 0b11000000, 0b10010000, 0b11000000},
+  {0b10010000, 0b01100000, 0b01010000, 0b01110100},
+  {0b00010000, 0b10100000, 0b00000000, 0b11100000},
+  {0b00010000, 0b11100000, 0b01010000, 0b11010000},
+  {0b00110000, 0b10100000, 0b00100000, 0b01100000}
 };
 
 bool PATH_Init(void){
@@ -38,7 +43,7 @@ uint8_t PATH_GetMapInfo(uint8_t x, uint8_t y, TBOX_INFO info){
   
   if(x < 5 && y < 4)
   {
-    temp = Map[x][y];
+    temp = getNormaliseBoxVal(x, y);
     
     switch(info)
     {
@@ -72,6 +77,55 @@ uint8_t PATH_GetMapInfo(uint8_t x, uint8_t y, TBOX_INFO info){
   return box;
 }
 
-uint8_t normaliseBoxVal(uint8_t x, uint8_t y){
-  
+void PATH_UpdateOrient(uint8_t num90Turns, TDIRECTION dir){
+  int8_t temp;
+
+  if(dir == DIR_CW){
+    RotationFactor = (RotationFactor + num90Turns) % 4; //CW direction is 'positive movement'
+  } else {
+    //If CCW direction, we must make sure we are moduloing within 4 states (0,1,2,3)
+    //therefore, we must check for negative values.
+    temp = RotationFactor - num90Turns;
+    temp = temp % 4;
+
+    if (temp < 0)
+    {
+      temp += 4;
+    }
+    
+    RotationFactor = temp;
+  }
+}
+
+/*! @brief Normalises the wall location in relation to the robot for a
+ *  particular square.
+ *
+ *  @param x - horizontal co-ordinate
+ *  @param y - vertical co-ordinate
+ *
+ *  @return 8-bit number - Normalised info about the box.
+ */
+uint8_t getNormaliseBoxVal(uint8_t x, uint8_t y){
+  /* We only want to normalise the values in the map boxes that correspond to the
+   * 4 walls. To 'normalise' this value, we must bit shift the box values by the
+   * amount of times the robot has rotated in the system.
+   *
+   * As long as the RotationFactor is either (0, 1, 2, 3) this algorithm will work.
+   *
+   * Example:
+   *  - Consider we have box value = 1001 0000, with RotationFactor = 3
+   *  - After normalisation, the box value = 1100 0000
+   *
+   * We will use this example box value and RotationFactor
+   * to illustrate the algorithm.
+   */
+  uint8_t temp;
+  uint8_t info = (Map[x][y] & INFO_MASK);
+  uint8_t boxval = (Map[x][y] & WALL_MASK) >> 4; //Eg: bv = 0000 1001
+
+  boxval = boxval << RotationFactor;    //Eg. bv = 0100 1000
+  temp = boxval << 4;                   //Eg. temp = 1000 0000
+  boxval = (temp | boxval) & WALL_MASK; //Eg. ((1000 0000) | (0100 1000)) & WALL_MASK) 
+                                        //    = (1100 0000) Normalised box value!
+  return (boxval | info);
 }
