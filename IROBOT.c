@@ -11,6 +11,7 @@
 #include "IR.h" //TODO: Ensure IR is being initialised here
 #include "EEPROM.h"
 #include "USART.h"
+#include "PATH.h"
 #include "MOVE.h"
 #include "SM.h"
 #include "LCD.h" //TODO: Remove references to LCD
@@ -43,7 +44,7 @@ static void playSong(uint8_t songNo);
 /* End Private function prototypes */
 
 bool IROBOT_Init(void){
-  return USART_Init() && SM_Init() && MOVE_Init();
+  return (USART_Init() && SM_Init() && MOVE_Init() && PATH_Init());
 }
 
 void IROBOT_Start(void){
