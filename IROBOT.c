@@ -19,6 +19,8 @@
 #include "IROBOT.h"
 
 /* Loading Song Notes to EEPROM (pre-loading only) - TODO: Choose notes */
+//Note duration is stored next to the note:
+//  -e.g. DATA(D, 0.5s, C#, 0.2s); 'D' will play for 0.5seconds, 'C#' will play for 0.2s
 __EEPROM_DATA(31, 32, 33, 31, 35, 31, 32, 33);  //Song 0 - ADDR offset: 0x00
 __EEPROM_DATA(33, 34, 35, 33, 32, 31, 33, 34);
 __EEPROM_DATA(1, 2, 3, 4, 5, 6, 7, 8);          //Song 1 - ADDR offset: 0x10
@@ -58,6 +60,21 @@ void IROBOT_Start(void){
 void IROBOT_Test(void){
   playSong(0);
 }
+
+void IROBOT_MazeRun(void){
+  bool vic1Found, vic2Found = false;
+  
+  while(!(vic1Found && vic2Found))
+  {
+    //Traverse the maze
+      //while(!sensor)
+        //Determine next box to move to
+        //Move there
+        //Update location
+      //Check what sensor and handle scenario accordingly??
+  }
+}
+
 
 void IROBOT_WallFollow(void){
   double tolerance, dist;    //dist variable stores the IR sensor reading
@@ -165,16 +182,16 @@ static void loadSongs(void){
   for(i = 0; i < 4; i++)
   {
     USART_OutChar(OP_LOAD_SONG);
-    USART_OutChar(i);             //Song number
-    USART_OutChar(EEPM_SONG_SIZE);//Song Length
+    USART_OutChar(i);                   //Song number
+    USART_OutChar(EEPM_NUM_SONG_NOTES); //Notes in a song
 
-    for(j = 0; j < EEPM_SONG_SIZE; j++)
+    for(j = 0; j < EEPM_SONG_MEM_SIZE; j+= 2)
     {
-      USART_OutChar(eeprom_read((addrOffset + j))); //Load the note stored in flash mem
-      USART_OutChar(32); //TODO: Uniform note duration? 32 = half-second
+      USART_OutChar(eeprom_read((addrOffset + j)));   //Load the note stored in flash mem
+      USART_OutChar(eeprom_read((addrOffset + j)+1)); //Note duration is stored next to the note in mem 
     }
 
-    addrOffset += EEPM_SONG_SIZE; //Increment the address offset for the next song
+    addrOffset += EEPM_SONG_MEM_SIZE; //Increment the address offset for the next song
   }
 }
 

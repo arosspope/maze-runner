@@ -24,15 +24,13 @@ extern "C" {
 
 /* Starting addresses for bytes of data in FLASH */
 /* Song Address Ranges */
-#define EEPM_SONG_SIZE  16   //Each song can be 16 notes (16 bytes in Flash mem)
+#define EEPM_SONG_MEM_SIZE  16   //Each song has 8 notes, each note plays for a specified amount of time
+                                 //therefore, we have (8 notes + 8 time values = 16) of required mem
+#define EEPM_NUM_SONG_NOTES 8    //Number of notes in a song
 #define EEPM_SONG0_ADDR 0x00 //Address offset for song0
 #define EEPM_SONG1_ADDR 0x10 //Address offset for song1
 #define EEPM_SONG2_ADDR 0x20 //Address offset for song2
 #define EEPM_SONG3_ADDR 0x30 //Address offset for song3
-
-/* Maze map inforamtion*/
-#define EEPM_MAP_SIZE   20   //TODO: must determine map size
-#define EEPM_MAP_ADDR   0x40 //Address offset for the map
 
 #ifdef	__cplusplus
 }
