@@ -39,15 +39,15 @@ __EEPROM_DATA(9, 10, 11, 12, 13, 14, 15, 16);
 
 /* Private function prototypes */
 static void wallAlign(uint16_t wallLocation);
-static uint16_t closestObject(void);
 static void resetIRPos(void);
 static void loadSongs(void);
 static void playSong(uint8_t songNo);
-static void frontAlign(bool turnLeft);
+static uint16_t getAlignAngle(uint8_t x, uint8_t y, TDIRECTION dir, uint8_t numTurns);
+static uint16_t closestObject(void);
 /* End Private function prototypes */
 
 bool IROBOT_Init(void){
-  return (USART_Init() && SM_Init() && MOVE_Init() && PATH_Init());
+  return (USART_Init() && IR_Init() && SM_Init() && MOVE_Init() && PATH_Init());
 }
 
 void IROBOT_Start(void){
@@ -63,73 +63,59 @@ void IROBOT_Test(void){
 }
 
 void IROBOT_MazeRun(void){
-  bool vic1Found, vic2Found = false;
-  bool sensTrig = false;
-  uint8_t x = 1;
+  bool vic1Found = false; bool vic2Found = false; bool sensTrig = false;
+  uint16_t theta;
+  uint8_t x = 1; //It is assumed that the robots start position is always (1,3)
   uint8_t y = 3;
   
-  //RotationFactor = 0;
-  
   while(!(vic1Found && vic2Found) && !sensTrig)
-  {
-    LCD_PrintInt(RotationFactor, TOP_RIGHT);
-    LCD_PrintInt(x, BM_LEFT);
-    LCD_PrintInt(y, BM_RIGHT);
-    
-    if(!PATH_GetMapInfo(x, y, BOX_Left))
+  {  
+    /* For the current box we are in, determine the next possible location to move
+     * in the following preference heirachy:
+     *  1. Left, 2. Front, 3. Right
+     * If there is not a wall blocking us there, then go that direction.
+     */
+    if(!PATH_GetMapInfo(x, y, BOX_Left)) //If there is no wall to the left of us
     {
-      //sensTrig |= MOVE_Rotate(DRIVE_ROTATE_SPEED, 90, DIR_CCW);
-      frontAlign(true);
+      theta = getAlignAngle(x, y, DIR_CCW, 1);
+      MOVE_Rotate(DRIVE_ROTATE_SPEED, theta, DIR_CCW);
       PATH_UpdateOrient(1, DIR_CCW);
-      //take it
-    } else if (!PATH_GetMapInfo(x, y, BOX_Front)){
-      //take it
-    } else if (!PATH_GetMapInfo(x, y, BOX_Right)){
-      //sensTrig |= MOVE_Rotate(DRIVE_ROTATE_SPEED, 90, DIR_CW);
-      frontAlign(false);
+    }
+    else if (!PATH_GetMapInfo(x, y, BOX_Front))
+    {
+      //We do not need to rotate the robot in this case
+    }
+    else if (!PATH_GetMapInfo(x, y, BOX_Right))
+    {
+      theta = getAlignAngle(x, y, DIR_CW, 1);
+      MOVE_Rotate(DRIVE_ROTATE_SPEED, theta, DIR_CW);
       PATH_UpdateOrient(1, DIR_CW);
-      //take it
-    } else {
-      sensTrig |= MOVE_Rotate(DRIVE_ROTATE_SPEED, 180, DIR_CW);
+    }
+    else
+    {
+      //Turn around 180 to move out of box we are trapped in
+      theta = getAlignAngle(x, y, DIR_CW, 2);
+      MOVE_Rotate(DRIVE_ROTATE_SPEED, theta, DIR_CW);
       PATH_UpdateOrient(2, DIR_CW);
-      //turn around
     }
-    __delay_ms(500);
-    MOVE_Straight(DRIVE_TOP_SPEED, 1000);
-//    if(!sensTrig)
-//      sensTrig |= MOVE_Straight(DRIVE_TOP_SPEED, 1000);
     
-    
-    switch(RotationFactor){
+    MOVE_Straight(DRIVE_TOP_SPEED, 1000); //Move 1m into the next box
+
+    /* Depending on the rotationFactor and subsequently, where the robot has moved,
+     * we must update our x, y co-ordinates.
+     */
+    switch(PATH_RotationFactor){
       case 0:
-        x = x-1;
-        break;
+        x = x - 1; break;
       case 1:
-        y = y+1;
-        break;
+        y = y + 1; break;
       case 2:
-        x = x+1;
-        break;
+        x = x + 1; break;
       case 3:
-        y = y-1;
-        break;
+        y = y - 1; break;
     }
-    
-    __delay_ms(500);
-    
-//    if(PATH_GetMapInfo(x, y, BOX_Front))
-//      frontAlign();
-    
-    
-    //Traverse the maze
-      //while(!sensor)
-        //Determine next box to move to
-        //Move there
-        //Update location
-      //Check what sensor and handle scenario accordingly??
   }
 }
-
 
 void IROBOT_WallFollow(void){
   double tolerance, dist;    //dist variable stores the IR sensor reading
@@ -268,47 +254,65 @@ static void playSong(uint8_t songNo){
   USART_OutChar(songNo);
 }
 
-static void frontAlign(bool turnLeft){
-  //--------------------- closest object ------------
-  uint16_t i, orientation, closestObject, stepsBack, offset;
-  uint16_t theta;
-  uint16_t stepsFor360 = SM_F_STEPS_FOR_180 * 2;
+/*! @brief Calculates the desired angle to rotate a certain amount of 90 degree
+ *         turns based on the current 'error' in relation to the map.
+ *
+ *  @param x - coordinate x on the map
+ *  @param y - coordinate y on the map
+ *  @param dir - Direction to turn in
+ *  @param numTurns - The amount of 90 degs turns to perform
+ *
+ *  @return theta - The angle to move in the specified direction
+ */
+static uint16_t getAlignAngle(uint8_t x, uint8_t y, TDIRECTION dir, uint8_t numTurns){
+  uint16_t i, closestWall, theta, orientation;
   double smallestIR = 4000.0; //Set this initial value to outside the range of the IR sensor
   double data;
 
-  //Reset the IR position to 0
-  orientation = SM_Move(0, DIR_CW);
-  orientation = SM_Move(orientation, DIR_CCW);
-  
-  //Move the IR sensor 45 CCW
-  SM_Move(25, DIR_CCW);
-  
-  //90 sweep
-  for(i = 0; i < 50; i++){
-    data = IR_Measure();
-    if (data < smallestIR){
-      smallestIR = data;
-      closestObject = orientation;
+  //Reset the IR position to 0 forward facing the robot
+  resetIRPos();
+
+  //Preferrably, we would like to align ourselves on a wall in front of us
+  if(PATH_GetMapInfo(x, y, BOX_Front))
+  {
+    //Move the IR sensor 45 CCW (25 steps)
+    orientation = SM_Move(25, DIR_CCW);
+
+    //Do a 90 degree sweep (50 steps) back CW, and find the angle (step) at which the wall was closest
+    for(i = 0; i < 50; i++){
+      data = IR_Measure();
+      if (data < smallestIR){
+        smallestIR = data;
+        closestWall = orientation;
+      }
+      orientation = SM_Move(1, DIR_CW);
     }
-    orientation = SM_Move(1, DIR_CW);
+
+    //Normalise wall so that it is in degrees (steps -> degrees)
+    closestWall = (uint16_t) (closestWall * SM_F_STEP_RESOLUTION);
+
+    if(dir == DIR_CCW) //Left-movement
+    {
+      if(closestWall < 90){
+        theta = (90*numTurns) - closestWall;
+      } else {
+        theta = (90*numTurns) + (360 - closestWall);
+      }
+    }
+    else //Right-movement
+    {
+      if(closestWall < 90){
+        theta = (90*numTurns) + closestWall;
+      } else {
+        theta = (90*numTurns) - (360 - closestWall);
+      }
+    }
   }
-  
-  if(turnLeft){
-    if((closestObject*SM_F_STEP_RESOLUTION) < 45){
-      theta = (uint16_t)(90 + 45 - (closestObject*SM_F_STEP_RESOLUTION));
-    }else{
-      theta = (uint16_t)(90 - (closestObject*SM_F_STEP_RESOLUTION) - 45);
-    }
-    MOVE_Rotate(DRIVE_ROTATE_SPEED, theta, DIR_CCW);
-    
-  } else {
-    if((closestObject*SM_F_STEP_RESOLUTION) < 45){
-      theta = (uint16_t)(90 - 45 - (closestObject*SM_F_STEP_RESOLUTION));
-    }else{
-      theta = (uint16_t)(90 + (closestObject*SM_F_STEP_RESOLUTION) - 45);
-    }
-    MOVE_Rotate(DRIVE_ROTATE_SPEED, theta, DIR_CW);
+  else
+  {
+    //There is no wall - we hope for the best. TODO: there must be a better method?
+    theta = (90*numTurns);
   }
-  
-  
+
+  return theta;
 }

@@ -12,7 +12,6 @@
 /* User defined libaries */
 #include "LED.h"
 #include "LCD.h"
-#include "IR.h" //TODO: Will main actually need to know about the IR sensor? (should we read IR at all?)
 #include "BNT.h"
 #include "IROBOT.h"
 #include "types.h"
@@ -98,7 +97,7 @@ bool systemInit(void){
    * the module does not init correctly due to weird timing issues
    * and state of registers.
    */
-  success = BNT_Init() && LED_Init() && LCD_Init() && IR_Init() && IROBOT_Init()
+  success = BNT_Init() && LED_Init() && LCD_Init() && IROBOT_Init()
             && timerInit() && LCD_Init();
 
   return success;
@@ -119,21 +118,15 @@ void main(void) {
     {
       LCD_PrintStr("REST", TOP_LEFT); //By default, the robot is in 'REST' mode
 
-      //IR has a refresh rate of 1HZ in normal operation mode (standby)
-      if (IR_FLAG) {
-        //LCD_PrintInt((int) IR_Measure(), TOP_RIGHT);  //Print in mm
-        IR_FLAG = false;
-      }
-
       //Check to see if button was pressed
-      if(buttonList[0].bntPressed){
+      if(buttonList[0].bntPressed)
+      {
         buttonList[0].bntPressed = false;
         
-        //TODO: Test code - for wall follow
+        //TODO: Test code - for maze-run
         LCD_PrintStr("WALL", TOP_LEFT); //Print the MODE
-        //IROBOT_WallFollow();
         IROBOT_MazeRun();
-        IROBOT_Test();
+        IROBOT_Test(); //TODO: Currently runs short song
       }
     }
   }
