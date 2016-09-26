@@ -106,14 +106,13 @@ bool MOVE_CheckSensor(SensorsStatus_t * sensStatus){
   USART_OutChar(OP_QUERY);
   USART_OutChar(2);         //Get information about 3 sensors TODO: Implement victim
   USART_OutChar(OP_SENS_BUMP);
-  USART_OutChar(OP_SENS_VWALL);
+  USART_OutChar(OP_SENS_WALL);
   
   //1. Packet ID: 7 (Bump and Wheel drop)
-  data = USART_InChar();
-  sensStatus->sensBits.bump = (data & 0b00000011);   //We only care about the bump data so AND with mask
+  sensStatus->sensBits.bump = (USART_InChar() & 0b00000011);   //We only care about the bump data so AND with mask
 
-  //2. Packet ID: 13 (Virtual Wall)
-  sensStatus->sensBits.virtWall = USART_InChar();
+  //2. Packet ID: 8 (Wall)
+  sensStatus->sensBits.wall = USART_InChar();
 
   //3. TODO: Implement victim
   sensStatus->sensBits.victim = 0;

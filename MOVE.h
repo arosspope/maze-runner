@@ -23,7 +23,7 @@ typedef union
   struct
   {
     uint8_t bump     : 1;	/*!< The bump status bit. */
-    uint8_t virtWall : 1;	/*!< The virtWall status bit. */
+    uint8_t wall     : 1;	/*!< The wall status bit. */
     uint8_t victim   : 1;	/*!< The victim status bit. */
   } sensBits;
 } SensorsStatus_t;   

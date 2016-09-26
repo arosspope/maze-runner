@@ -27,6 +27,7 @@ extern "C" {
 /* Codes for Sensor information */
 #define OP_SENSORS      142
 #define OP_QUERY        149
+#define OP_SENS_WALL    8
 #define OP_SENS_VWALL   13
 #define OP_SENS_BUMP    7
 #define OP_SENS_GROUP   1   //Will return information about bump, wall, cliff, and virtual wall sensors
