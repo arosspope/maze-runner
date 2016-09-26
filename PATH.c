@@ -25,7 +25,7 @@
 uint8_t getNormaliseBoxVal(uint8_t x, uint8_t y);
 /* End prototypes */
 
-uint8_t RotationFactor; /*< Used to determine the maps direction in relation to the robot (0-3)*/
+uint8_t PATH_RotationFactor;
 static uint8_t Map[5][4] = {  /*< Digital map of the maze space */
   {0b10110000, 0b11000000, 0b10010000, 0b11000000},
   {0b10010000, 0b01100000, 0b01010000, 0b01110100},
@@ -35,7 +35,7 @@ static uint8_t Map[5][4] = {  /*< Digital map of the maze space */
 };
 
 bool PATH_Init(void){
-  RotationFactor = 0;
+  PATH_RotationFactor = 0;
   return true;
 }
 
@@ -82,11 +82,11 @@ void PATH_UpdateOrient(uint8_t num90Turns, TDIRECTION dir){
   int8_t temp;
 
   if(dir == DIR_CW){
-    RotationFactor = (RotationFactor + num90Turns) % 4; //CW direction is 'positive movement'
+    PATH_RotationFactor = (PATH_RotationFactor + num90Turns) % 4; //CW direction is 'positive movement'
   } else {
     //If CCW direction, we must make sure we are moduloing within 4 states (0,1,2,3)
     //therefore, we must check for negative values.
-    temp = RotationFactor - num90Turns;
+    temp = PATH_RotationFactor - num90Turns;
     temp = temp % 4;
 
     if (temp < 0)
@@ -94,7 +94,7 @@ void PATH_UpdateOrient(uint8_t num90Turns, TDIRECTION dir){
       temp += 4;
     }
     
-    RotationFactor = temp;
+    PATH_RotationFactor = temp;
   }
 }
 
@@ -124,7 +124,7 @@ uint8_t getNormaliseBoxVal(uint8_t x, uint8_t y){
   uint8_t info = (Map[x][y] & INFO_MASK);
   uint8_t boxval = (Map[x][y] & WALL_MASK) >> 4; //Eg: bv = 0000 1001
 
-  boxval = boxval << RotationFactor;    //Eg. bv = 0100 1000
+  boxval = boxval << PATH_RotationFactor;    //Eg. bv = 0100 1000
   temp = boxval << 4;                   //Eg. temp = 1000 0000
   boxval = (temp | boxval) & WALL_MASK; //Eg. ((1000 0000) | (0100 1000)) & WALL_MASK) 
                                         //    = (1100 0000) Normalised box value!
