@@ -43,6 +43,7 @@ static uint16_t closestObject(void);
 static void resetIRPos(void);
 static void loadSongs(void);
 static void playSong(uint8_t songNo);
+static void frontAlign(bool turnLeft);
 /* End Private function prototypes */
 
 bool IROBOT_Init(void){
@@ -77,13 +78,15 @@ void IROBOT_MazeRun(void){
     
     if(!PATH_GetMapInfo(x, y, BOX_Left))
     {
-      sensTrig |= MOVE_Rotate(DRIVE_ROTATE_SPEED, 90, DIR_CCW);
+      //sensTrig |= MOVE_Rotate(DRIVE_ROTATE_SPEED, 90, DIR_CCW);
+      frontAlign(true);
       PATH_UpdateOrient(1, DIR_CCW);
       //take it
     } else if (!PATH_GetMapInfo(x, y, BOX_Front)){
       //take it
     } else if (!PATH_GetMapInfo(x, y, BOX_Right)){
-      sensTrig |= MOVE_Rotate(DRIVE_ROTATE_SPEED, 90, DIR_CW);
+      //sensTrig |= MOVE_Rotate(DRIVE_ROTATE_SPEED, 90, DIR_CW);
+      frontAlign(false);
       PATH_UpdateOrient(1, DIR_CW);
       //take it
     } else {
@@ -92,8 +95,10 @@ void IROBOT_MazeRun(void){
       //turn around
     }
     __delay_ms(500);
-    sensTrig |= MOVE_Straight(DRIVE_TOP_SPEED, 1000);
-    __delay_ms(500);
+    MOVE_Straight(DRIVE_TOP_SPEED, 1000);
+//    if(!sensTrig)
+//      sensTrig |= MOVE_Straight(DRIVE_TOP_SPEED, 1000);
+    
     
     switch(RotationFactor){
       case 0:
@@ -109,6 +114,11 @@ void IROBOT_MazeRun(void){
         y = y-1;
         break;
     }
+    
+    __delay_ms(500);
+    
+//    if(PATH_GetMapInfo(x, y, BOX_Front))
+//      frontAlign();
     
     
     //Traverse the maze
@@ -256,4 +266,49 @@ static void playSong(uint8_t songNo){
 
   USART_OutChar(OP_PLAY_SONG);
   USART_OutChar(songNo);
+}
+
+static void frontAlign(bool turnLeft){
+  //--------------------- closest object ------------
+  uint16_t i, orientation, closestObject, stepsBack, offset;
+  uint16_t theta;
+  uint16_t stepsFor360 = SM_F_STEPS_FOR_180 * 2;
+  double smallestIR = 4000.0; //Set this initial value to outside the range of the IR sensor
+  double data;
+
+  //Reset the IR position to 0
+  orientation = SM_Move(0, DIR_CW);
+  orientation = SM_Move(orientation, DIR_CCW);
+  
+  //Move the IR sensor 45 CCW
+  SM_Move(25, DIR_CCW);
+  
+  //90 sweep
+  for(i = 0; i < 50; i++){
+    data = IR_Measure();
+    if (data < smallestIR){
+      smallestIR = data;
+      closestObject = orientation;
+    }
+    orientation = SM_Move(1, DIR_CW);
+  }
+  
+  if(turnLeft){
+    if((closestObject*SM_F_STEP_RESOLUTION) < 45){
+      theta = (uint16_t)(90 + 45 - (closestObject*SM_F_STEP_RESOLUTION));
+    }else{
+      theta = (uint16_t)(90 - (closestObject*SM_F_STEP_RESOLUTION) - 45);
+    }
+    MOVE_Rotate(DRIVE_ROTATE_SPEED, theta, DIR_CCW);
+    
+  } else {
+    if((closestObject*SM_F_STEP_RESOLUTION) < 45){
+      theta = (uint16_t)(90 - 45 - (closestObject*SM_F_STEP_RESOLUTION));
+    }else{
+      theta = (uint16_t)(90 + (closestObject*SM_F_STEP_RESOLUTION) - 45);
+    }
+    MOVE_Rotate(DRIVE_ROTATE_SPEED, theta, DIR_CW);
+  }
+  
+  
 }
