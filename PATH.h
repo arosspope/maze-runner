@@ -27,7 +27,7 @@ typedef enum {
   BOX_BeenThere,
   BOX_All
 } TBOX_INFO;    
-    
+extern uint8_t RotationFactor;
 /*! @brief Sets up the PATH module before first use.
  *
  *  @return bool - TRUE if PATH was successfully initialized.

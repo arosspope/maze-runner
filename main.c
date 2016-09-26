@@ -121,7 +121,7 @@ void main(void) {
 
       //IR has a refresh rate of 1HZ in normal operation mode (standby)
       if (IR_FLAG) {
-        LCD_PrintInt((int) IR_Measure(), TOP_RIGHT);  //Print in mm
+        //LCD_PrintInt((int) IR_Measure(), TOP_RIGHT);  //Print in mm
         IR_FLAG = false;
       }
 
@@ -131,7 +131,8 @@ void main(void) {
         
         //TODO: Test code - for wall follow
         LCD_PrintStr("WALL", TOP_LEFT); //Print the MODE
-        IROBOT_WallFollow();
+        //IROBOT_WallFollow();
+        IROBOT_MazeRun();
         IROBOT_Test();
       }
     }

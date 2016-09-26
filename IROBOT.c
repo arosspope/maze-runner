@@ -63,9 +63,54 @@ void IROBOT_Test(void){
 
 void IROBOT_MazeRun(void){
   bool vic1Found, vic2Found = false;
+  bool sensTrig = false;
+  uint8_t x = 1;
+  uint8_t y = 3;
   
-  while(!(vic1Found && vic2Found))
+  //RotationFactor = 0;
+  
+  while(!(vic1Found && vic2Found) && !sensTrig)
   {
+    LCD_PrintInt(RotationFactor, TOP_RIGHT);
+    LCD_PrintInt(x, BM_LEFT);
+    LCD_PrintInt(y, BM_RIGHT);
+    
+    if(!PATH_GetMapInfo(x, y, BOX_Left))
+    {
+      sensTrig |= MOVE_Rotate(DRIVE_ROTATE_SPEED, 90, DIR_CCW);
+      PATH_UpdateOrient(1, DIR_CCW);
+      //take it
+    } else if (!PATH_GetMapInfo(x, y, BOX_Front)){
+      //take it
+    } else if (!PATH_GetMapInfo(x, y, BOX_Right)){
+      sensTrig |= MOVE_Rotate(DRIVE_ROTATE_SPEED, 90, DIR_CW);
+      PATH_UpdateOrient(1, DIR_CW);
+      //take it
+    } else {
+      sensTrig |= MOVE_Rotate(DRIVE_ROTATE_SPEED, 180, DIR_CW);
+      PATH_UpdateOrient(2, DIR_CW);
+      //turn around
+    }
+    __delay_ms(500);
+    sensTrig |= MOVE_Straight(DRIVE_TOP_SPEED, 1000);
+    __delay_ms(500);
+    
+    switch(RotationFactor){
+      case 0:
+        x = x-1;
+        break;
+      case 1:
+        y = y+1;
+        break;
+      case 2:
+        x = x+1;
+        break;
+      case 3:
+        y = y-1;
+        break;
+    }
+    
+    
     //Traverse the maze
       //while(!sensor)
         //Determine next box to move to

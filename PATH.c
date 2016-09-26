@@ -9,6 +9,7 @@
  *  @date 22-09-2016
  */
 #include "PATH.h"
+#include "LCD.h"
 
 #define WALL_MASK 0b11110000
 #define INFO_MASK 0b00001111
@@ -24,7 +25,7 @@
 uint8_t getNormaliseBoxVal(uint8_t x, uint8_t y);
 /* End prototypes */
 
-static uint8_t RotationFactor; /*< Used to determine the maps direction in relation to the robot (0-3)*/
+uint8_t RotationFactor; /*< Used to determine the maps direction in relation to the robot (0-3)*/
 static uint8_t Map[5][4] = {  /*< Digital map of the maze space */
   {0b10110000, 0b11000000, 0b10010000, 0b11000000},
   {0b10010000, 0b01100000, 0b01010000, 0b01110100},
@@ -44,7 +45,7 @@ uint8_t PATH_GetMapInfo(uint8_t x, uint8_t y, TBOX_INFO info){
   if(x < 5 && y < 4)
   {
     temp = getNormaliseBoxVal(x, y);
-    
+
     switch(info)
     {
       case BOX_Front:

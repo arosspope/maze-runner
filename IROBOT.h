@@ -38,6 +38,8 @@ void IROBOT_WallFollow(void);
 
 //TODO: Must remove
 void IROBOT_Test(void);
+
+void IROBOT_MazeRun(void);
 #ifdef	__cplusplus
 }
 #endif
