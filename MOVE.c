@@ -104,9 +104,10 @@ bool MOVE_CheckSensor(SensorsStatus_t * sensStatus){
 
   //Tell the Robot to send back information regarding a group of sensors
   USART_OutChar(OP_QUERY);
-  USART_OutChar(2);         //Get information about 3 sensors TODO: Implement victim
+  USART_OutChar(3);         //Get information about 3 sensors TODO: Implement victim
   USART_OutChar(OP_SENS_BUMP);
   USART_OutChar(OP_SENS_WALL);
+  USART_OutChar(OP_SENS_IR);
   
   //1. Packet ID: 7 (Bump and Wheel drop)
   sensStatus->sensBits.bump = (USART_InChar() & 0b00000011);   //We only care about the bump data so AND with mask
@@ -114,8 +115,10 @@ bool MOVE_CheckSensor(SensorsStatus_t * sensStatus){
   //2. Packet ID: 8 (Wall)
   sensStatus->sensBits.wall = USART_InChar();
 
-  //3. TODO: Implement victim
-  sensStatus->sensBits.victim = 0;
+  //3. Packet ID: 17 (Infrared Byte)
+  data = USART_InChar();
+  if(data >= 248 && data <= 254)  //A particular range of IR values indicates that we are in prescense of home base
+    sensStatus->sensBits.victim = 1;
 
   return (sensStatus->sensors > 0); //A value greater than 0 indicates one of the sensors have been tripped
 }
