@@ -33,7 +33,7 @@ __EEPROM_DATA(9, 10, 11, 12, 13, 14, 15, 16);
 /* Loading Map data to EEPROM; ADDR offset 0x40 - TODO: Must do */
 
 //Optimal speeds for driving the iROBOT
-#define DRIVE_TOP_SPEED   200
+#define DRIVE_TOP_SPEED   250
 #define DRIVE_TURN_SPEED  150
 #define DRIVE_ROTATE_SPEED 210
 
@@ -283,7 +283,16 @@ static uint16_t closestObject(void){
  */
 static void resetIRPos(void){
   uint16_t orientation = SM_Move(0, DIR_CW);  //Get where the IR is pointing
-  SM_Move(orientation, DIR_CCW);              //Move back those number of steps
+  uint16_t moveBack;
+  
+  if(orientation > 100){
+    moveBack = 200 - orientation;
+    SM_Move(moveBack, DIR_CW);
+  } else {
+    SM_Move(orientation, DIR_CCW);
+  }
+  
+  //SM_Move(orientation, DIR_CCW);              //Move back those number of steps
 }
 
 /*! @brief Loads the 4 pre-defined songs onto the iRobot
