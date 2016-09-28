@@ -21,13 +21,13 @@
 /* Loading Song Notes to EEPROM (pre-loading only) - TODO: Choose notes */
 //Note duration is stored next to the note:
 //  -e.g. DATA(D, 0.5s, C#, 0.2s); 'D' will play for 0.5seconds, 'C#' will play for 0.2s
-__EEPROM_DATA(31, 32, 33, 31, 35, 31, 32, 33);  //Song 0 - ADDR offset: 0x00
-__EEPROM_DATA(33, 34, 35, 33, 32, 31, 33, 34);
+__EEPROM_DATA(71, 32, 76, 31, 79, 31, 78, 33);  //Song 0 - ADDR offset: 0x00
+__EEPROM_DATA(76, 34, 71, 33, 69, 31, 78, 34);
 __EEPROM_DATA(1, 2, 3, 4, 5, 6, 7, 8);          //Song 1 - ADDR offset: 0x10
 __EEPROM_DATA(9, 10, 11, 12, 13, 14, 15, 16);
 __EEPROM_DATA(1, 2, 3, 4, 5, 6, 7, 8);          //Song 2 - ADDR offset: 0x20
 __EEPROM_DATA(9, 10, 11, 12, 13, 14, 15, 16);
-__EEPROM_DATA(1, 2, 3, 4, 5, 6, 7, 8);          //Song 3 - ADDR offset: 0x30
+__EEPROM_DATA(1, 2, 3, 4, 5, 6, 7, 8)  ;          //Song 3 - ADDR offset: 0x30
 __EEPROM_DATA(9, 10, 11, 12, 13, 14, 15, 16);
 
 /* Loading Map data to EEPROM; ADDR offset 0x40 - TODO: Must do */
