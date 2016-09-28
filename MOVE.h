@@ -65,6 +65,8 @@ void MOVE_DirectDrive(int16_t leftWheelVel, int16_t rightWheelVel);
  * @return TRUE - if one of the sensors have been tripped
  */
 bool MOVE_CheckSensor(SensorsStatus_t * sensStatus);
+
+int16_t MOVE_GetDist(void);
 #ifdef	__cplusplus
 }
 #endif

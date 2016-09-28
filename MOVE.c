@@ -16,6 +16,18 @@ bool MOVE_Init(void){
   return true; //No initialisation needed for the move module
 }
 
+int16_t MOVE_GetDist(void){
+  int16_t distanceTravelled = 0;
+  uint16union_t rxdata;
+  
+  USART_OutChar(OP_SENSORS); USART_OutChar(OP_SENS_DIST);
+  rxdata.s.Hi = USART_InChar();
+  rxdata.s.Lo = USART_InChar();
+  
+  return (int16_t) rxdata.l;
+}
+
+
 bool MOVE_Straight(int16_t velocity, uint16_t distance){
   uint16union_t rxdata;
   SensorsStatus_t sensStatus;
@@ -110,15 +122,18 @@ bool MOVE_CheckSensor(SensorsStatus_t * sensStatus){
   USART_OutChar(OP_SENS_IR);
   
   //1. Packet ID: 7 (Bump and Wheel drop)
-  sensStatus->sensBits.bump = (USART_InChar() & 0b00000011);   //We only care about the bump data so AND with mask
-
+  //sensStatus->sensBits.bump = (USART_InChar() & 0b00000011);   //We only care about the bump data so AND with mask
+  sensStatus->sensBits.bump = 0;
   //2. Packet ID: 8 (Wall)
-  sensStatus->sensBits.wall = USART_InChar();
+//  sensStatus->sensBits.wall = USART_InChar();
+  sensStatus->sensBits.wall = 0;
 
   //3. Packet ID: 17 (Infrared Byte)
-  data = USART_InChar();
-  if(data >= 248 && data <= 254)  //A particular range of IR values indicates that we are in prescense of home base
-    sensStatus->sensBits.victim = 1;
-
-  return (sensStatus->sensors > 0); //A value greater than 0 indicates one of the sensors have been tripped
+//  data = USART_InChar();
+//  if(data >= 248 && data <= 254)  //A particular range of IR values indicates that we are in prescense of home base
+//    sensStatus->sensBits.victim = 1;
+  sensStatus->sensBits.victim = 0;
+  USART_InChar(); USART_InChar(); USART_InChar();
+  //return (sensStatus->sensors > 0); //A value greater than 0 indicates one of the sensors have been tripped
+  return 0;
 }

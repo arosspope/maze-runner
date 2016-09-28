@@ -34,7 +34,7 @@ void IROBOT_Start(void);
  *
  *  @return void
  */
-void IROBOT_WallFollow(void);
+void IROBOT_WallFollow(bool leftWallFollow, int16_t moveDist);
 
 //TODO: Must remove
 void IROBOT_Test(void);
