@@ -21,6 +21,8 @@
 #define H_MASK 0b00000100
 #define C_MASK 0b00000010
 
+#define P_MAPPED 0b10000000
+#define P_VAL    0b00001111
 /* Private Function prototypes */
 uint8_t getNormaliseBoxVal(uint8_t x, uint8_t y);
 /* End prototypes */
@@ -34,8 +36,49 @@ static uint8_t Map[5][4] = {  /*< Digital map of the maze space */
   {0b00110000, 0b10100000, 0b00100000, 0b01100000}
 };
 
+static uint8_t Path[5][4] = {  /*< Digital map of the maze space */
+  {0, 0, 0, 0},
+  {0, 0, 0, 0},
+  {0, 0, 0, 0},
+  {0, 0, 0, 0},
+  {0, 0, 0, 0}
+};
+
 bool PATH_Init(void){
   PATH_RotationFactor = 0;
+  return true;
+}
+
+bool PATH_Plan(uint8_t x, uint8_t y){
+  uint8_t i, j, k;
+  uint8_t boxCount = 0;
+  
+  //Reset the Path map
+  for(i = 0; i < 5; i++){
+    for(j = 0; j < 4; j++){
+      Path[i][j] = 0;
+    }
+  }
+  
+  
+  while(boxCount != 20){
+    if(!PATH_GetMapInfo(x, y, BOX_Front)){
+
+    }
+    
+    if(!PATH_GetMapInfo(x, y, BOX_Left)){
+      
+    }
+    
+    if(!PATH_GetMapInfo(x, y, BOX_Right)){
+      
+    }
+    
+    if(!PATH_GetMapInfo(x, y, BOX_Back)){
+      
+    }
+  }
+  
   return true;
 }
 
