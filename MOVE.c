@@ -16,8 +16,7 @@ bool MOVE_Init(void){
   return true; //No initialisation needed for the move module
 }
 
-int16_t MOVE_GetDist(void){
-  int16_t distanceTravelled = 0;
+int16_t MOVE_GetDistMoved(void){
   uint16union_t rxdata;
   
   USART_OutChar(OP_SENSORS); USART_OutChar(OP_SENS_DIST);
@@ -27,31 +26,22 @@ int16_t MOVE_GetDist(void){
   return (int16_t) rxdata.l;
 }
 
-
 bool MOVE_Straight(int16_t velocity, uint16_t distance){
   uint16union_t rxdata;
   SensorsStatus_t sensStatus;
   int16_t distanceTravelled = 0;
   bool sensorTrig = false;
 
-  //Get data from the Irobot regarding distance to reset the distance travelled
-  USART_OutChar(OP_SENSORS); USART_OutChar(OP_SENS_DIST);
-  USART_InChar(); USART_InChar(); //Dummy read of sensor values
-
+  MOVE_GetDistMoved(); //Reset distance encoders on the iRobot
   MOVE_DirectDrive(velocity, velocity); //Tell the IROBOT to drive straight at speed
 
   //Let the robot drive until it reaches the desired distance
   while((distanceTravelled < distance) && !sensorTrig){
-    //Get distance traveled since last call
-    USART_OutChar(OP_SENSORS);
-    USART_OutChar(OP_SENS_DIST);
-    rxdata.s.Hi = USART_InChar();
-    rxdata.s.Lo = USART_InChar();
-
+    //Get Distance Moved
     if(velocity >= 0){
-      distanceTravelled += (int16_t) rxdata.l; //Positive velocity returns positive distance
+      distanceTravelled += MOVE_GetDistMoved(); //Positive velocity returns positive distance
     } else {
-      distanceTravelled += ((int16_t)rxdata.l * -1); //Negative vel returns neg dist (must normalise)
+      distanceTravelled += (MOVE_GetDistMoved() * -1); //Negative vel returns neg dist (must normalise)
     }
 
     sensorTrig = MOVE_CheckSensor(&sensStatus);

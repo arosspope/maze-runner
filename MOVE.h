@@ -66,7 +66,11 @@ void MOVE_DirectDrive(int16_t leftWheelVel, int16_t rightWheelVel);
  */
 bool MOVE_CheckSensor(SensorsStatus_t * sensStatus);
 
-int16_t MOVE_GetDist(void);
+/* @brief Returns how far the robot has moved since last being called
+ *
+ * @return dist - signed 16 bit number
+ */
+int16_t MOVE_GetDistMoved(void);
 #ifdef	__cplusplus
 }
 #endif
