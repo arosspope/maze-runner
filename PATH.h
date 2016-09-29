@@ -28,6 +28,12 @@ typedef enum {
   BOX_All
 } TBOX_INFO;
 
+typedef struct
+{
+  uint8_t x,
+  uint8_t y
+} TORDINATE;
+
 extern uint8_t PATH_RotationFactor; /*< The rotation factor of the robot in relation to the map */
 
 /*! @brief Sets up the PATH module before first use.

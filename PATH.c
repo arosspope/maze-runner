@@ -49,7 +49,9 @@ bool PATH_Init(void){
   return true;
 }
 
-bool PATH_Plan(uint8_t x, uint8_t y){
+TORDINATE getNextBoxAt(TORDINATE ord, TBOX_INFO info)
+
+bool PATH_Plan(TORDINATE ord){
   uint8_t i, j, k;
   uint8_t boxCount = 0;
   
@@ -62,19 +64,19 @@ bool PATH_Plan(uint8_t x, uint8_t y){
   
   
   while(boxCount != 20){
-    if(!PATH_GetMapInfo(x, y, BOX_Front)){
+    if(!PATH_GetMapInfo(ord.x, ord.y, BOX_Front)){
 
     }
     
-    if(!PATH_GetMapInfo(x, y, BOX_Left)){
+    if(!PATH_GetMapInfo(ord.x, ord.y, BOX_Left)){
       
     }
     
-    if(!PATH_GetMapInfo(x, y, BOX_Right)){
+    if(!PATH_GetMapInfo(ord.x, ord.y, BOX_Right)){
       
     }
     
-    if(!PATH_GetMapInfo(x, y, BOX_Back)){
+    if(!PATH_GetMapInfo(ord.x, ord.y, BOX_Back)){
       
     }
   }
