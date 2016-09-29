@@ -41,7 +41,7 @@ __EEPROM_DATA(9, 10, 11, 12, 13, 14, 15, 16);
 static void resetIRPos(void);
 static void loadSongs(void);
 static void playSong(uint8_t songNo);
-void moveForwardFrom(uint8_t x, uint8_t y);
+void moveForwardFrom(TORDINATE ord);
 /* End Private function prototypes */
 
 bool IROBOT_Init(void){
@@ -63,42 +63,47 @@ void IROBOT_Test(void){
 
 void IROBOT_MazeRun(void){
   bool vic1Found = false; bool vic2Found = false; bool sensTrig = false;
-  uint16_t theta;
-  uint8_t x = 1; //It is assumed that the robots start position is always (1,3)
-  uint8_t y = 3;
+  TORDINATE home, currOrd, wayP1, wayP2, wayP3;
+  /* Initialise waypoints */
+  home.x = 1; home.y = 3; //It is assumed that the robots start position is always (1,3)
+  currOrd.x = 1; currOrd.y = 3;
+  wayP1.x = 3; wayP1.y = 3;
+  wayP2.x = 3; wayP2.y = 1;
+  wayP3.x = 0; wayP3.y = 0;
   
   while(!(vic1Found && vic2Found) && !sensTrig)
   {
-    if(!PATH_GetMapInfo(x, y, BOX_Left))
+    if(!PATH_GetMapInfo(currOrd, BOX_Left))
     {
       MOVE_Rotate(DRIVE_ROTATE_SPEED, 90, DIR_CCW);
-      PATH_UpdateOrient(1, DIR_CCW);      
-      moveForwardFrom(x, y);
+      PATH_UpdateOrient(1, DIR_CCW);
     } 
-    else if (!PATH_GetMapInfo(x, y, BOX_Front))
+    else if (!PATH_GetMapInfo(currOrd, BOX_Front))
     {
-      moveForwardFrom(x, y);
+      //Don't need to rotate
     } 
-    else if (!PATH_GetMapInfo(x, y, BOX_Right))
+    else if (!PATH_GetMapInfo(currOrd, BOX_Right))
     {
       MOVE_Rotate(DRIVE_ROTATE_SPEED, 90, DIR_CW);
       PATH_UpdateOrient(1, DIR_CW);
-      moveForwardFrom(x, y);
     } else {
+      //Only move is to come back from where we came from
       MOVE_Rotate(DRIVE_ROTATE_SPEED, 180, DIR_CW);
-      PATH_UpdateOrient(2, DIR_CW);      
-      moveForwardFrom(x, y);
+      PATH_UpdateOrient(2, DIR_CW);
     }
-    
+
+    moveForwardFrom(currOrd); //Move Forward from the current coordiante
+
+    //Update the co-ordinates
     switch(PATH_RotationFactor){
       case 0:
-        x = x - 1; break;
+        currOrd.x = currOrd.x - 1; break;
       case 1:
-        y = y + 1; break;
+        currOrd.y = currOrd.y + 1; break;
       case 2:
-        x = x + 1; break;
+        currOrd.x = currOrd.x + 1; break;
       case 3:
-        y = y - 1; break;
+       currOrd.y = currOrd.y - 1; break;
     }
   }
 }
@@ -168,46 +173,45 @@ static void resetIRPos(void){
 /*! @brief Will determine the best way to move forward into the next square, 
  *         from its current position. 
  *
- *  @param x - Horizontal coordinate of current location.
- *  @param y - Vertical coordinate of current location.
+ *  @param ord - The x/y coordinate to move forward from
  * 
  *  @note Assumes the robot has already been orientated to move into the next 
  *        grid location.
  */
-void moveForwardFrom(uint8_t x, uint8_t y){
-  uint8_t xNext = x;
-  uint8_t yNext = y;
+void moveForwardFrom(TORDINATE ord){
+  TORDINATE nextOrd;
+  nextOrd.x = ord.x; nextOrd.y = ord.y;
   
   //Calculates the next grid position based on what way the robot is facing
   switch(PATH_RotationFactor){
       case 0:
-        xNext = x - 1; break;
+        nextOrd.x = ord.x - 1; break;
       case 1:
-        yNext = y + 1; break;
+        nextOrd.y = ord.y + 1; break;
       case 2:
-        xNext = x + 1; break;
+        nextOrd.x = ord.x + 1; break;
       case 3:
-        yNext = y - 1; break;
+        nextOrd.y = ord.y - 1; break;
   }
   
-  if(PATH_GetMapInfo(x, y, BOX_Left) && PATH_GetMapInfo(xNext, yNext, BOX_Left))
+  if(PATH_GetMapInfo(ord, BOX_Left) && PATH_GetMapInfo(nextOrd, BOX_Left))
   {
     //If we can follow a wall on the left for 1m do it.
     IROBOT_WallFollow(DIR_CCW, 1000);
   } 
-  else if (PATH_GetMapInfo(x, y, BOX_Right) && PATH_GetMapInfo(xNext, yNext, BOX_Right))
+  else if (PATH_GetMapInfo(ord, BOX_Right) && PATH_GetMapInfo(nextOrd, BOX_Right))
   {
     //If we can follow a wall on the right for 1m do it
     IROBOT_WallFollow(DIR_CW, 1000);
   } 
-  else if (!PATH_GetMapInfo(x, y, BOX_Left) && PATH_GetMapInfo(xNext, yNext, BOX_Left))
+  else if (!PATH_GetMapInfo(ord, BOX_Left) && PATH_GetMapInfo(nextOrd, BOX_Left))
   {
     //If there's not a wall to the left of us in this box, but there is one in the next
     //box, then drive straight half-way, then use a wall follow the rest of the way
     MOVE_Straight(DRIVE_TOP_SPEED, 500);
     IROBOT_WallFollow(DIR_CCW, 500);
   }
-  else if (!PATH_GetMapInfo(x, y, BOX_Right) && PATH_GetMapInfo(xNext, yNext, BOX_Right))
+  else if (!PATH_GetMapInfo(ord, BOX_Right) && PATH_GetMapInfo(nextOrd, BOX_Right))
   {
     //Same as above but for the right wall
     MOVE_Straight(DRIVE_TOP_SPEED, 500);
