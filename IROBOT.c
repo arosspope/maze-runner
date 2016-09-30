@@ -34,8 +34,8 @@ __EEPROM_DATA(9, 10, 11, 12, 13, 14, 15, 16);
 
 //Optimal speeds for driving the iROBOT
 #define DRIVE_TOP_SPEED   500
-#define BLIND_TOP_SPEED   250
-#define DRIVE_TURN_SPEED  310
+#define BLIND_TOP_SPEED   200
+#define DRIVE_TURN_SPEED  350
 #define DRIVE_ROTATE_SPEED 210
 
 /* Private function prototypes */
@@ -147,7 +147,7 @@ void IROBOT_WallFollow(TDIRECTION irDir, int16_t moveDist){
   }
   
   //Get current distance reading, and set tolerance (i.e. distance from wall) at 0.707m
-  tolerance = 707;  
+  tolerance = 700;  
   dist = IR_Measure();
   MOVE_GetDistMoved();      //Reset the distance moved encoders on the iRobot
   
@@ -184,7 +184,7 @@ void IROBOT_WallFollow(TDIRECTION irDir, int16_t moveDist){
   MOVE_DirectDrive(0,0);  //Stop iRobot
 }
 
-/*! @brief Resets the postion of the IR sensor back to 0 (forward facing).
+/*! @brief Resets the position of the IR sensor back to 0 (forward facing).
  *
  */
 static void resetIRPos(void){
@@ -207,7 +207,11 @@ static void resetIRPos(void){
  *        grid location.
  */
 void moveForwardFrom(TORDINATE ord){
-  TORDINATE nextOrd;
+  
+    int blind_driveForwardDist = 480;
+    int wall_driveForwardDist = 500;
+    
+    TORDINATE nextOrd;
   nextOrd.x = ord.x; nextOrd.y = ord.y;
   
   //Calculates the next grid position based on what way the robot is facing
@@ -221,34 +225,83 @@ void moveForwardFrom(TORDINATE ord){
       case 3:
         nextOrd.y = ord.y - 1; break;
   }
-  
+
   if(PATH_GetMapInfo(ord, BOX_Left) && PATH_GetMapInfo(nextOrd, BOX_Left))
-  {
+  { 
     //If we can follow a wall on the left for 1m do it.
-    IROBOT_WallFollow(DIR_CCW, 1000);
+    IROBOT_WallFollow(DIR_CCW, wall_driveForwardDist);
+    if(PATH_GetMapInfo(nextOrd, BOX_Front) )
+    {
+    //If the next cube has a wall in front of us, make sure we don't hit it.
+        double ir,dist;
+        resetIRPos();   //Face the IR forward
+        ir = IR_Measure();
+        dist = 500;
+        while(ir>dist)   //Drive straight until we are 0.5m from the wall
+        {
+            MOVE_DirectDrive(BLIND_TOP_SPEED,BLIND_TOP_SPEED);
+            ir = IR_Measure();
+        }
+        MOVE_DirectDrive(0,0);
+    }
+    else
+        IROBOT_WallFollow(DIR_CCW, wall_driveForwardDist);
+    
   } 
   else if (PATH_GetMapInfo(ord, BOX_Right) && PATH_GetMapInfo(nextOrd, BOX_Right))
   {
     //If we can follow a wall on the right for 1m do it
-    IROBOT_WallFollow(DIR_CW, 1000);
+    IROBOT_WallFollow(DIR_CW, wall_driveForwardDist);
+    if(PATH_GetMapInfo(nextOrd, BOX_Front) )
+    {
+    //If the next cube has a wall in front of us, make sure we don't hit it.
+        double ir,dist;
+        resetIRPos();   //Face the IR forward
+        ir = IR_Measure();
+        dist = 500;
+        while(ir>dist)   //Drive straight until we are 0.5m from the wall
+        {
+            MOVE_DirectDrive(BLIND_TOP_SPEED,BLIND_TOP_SPEED);
+            ir = IR_Measure();
+        }
+        MOVE_DirectDrive(0,0);
+    }
+    else
+        IROBOT_WallFollow(DIR_CW, wall_driveForwardDist);
   } 
   else if (!PATH_GetMapInfo(ord, BOX_Left) && PATH_GetMapInfo(nextOrd, BOX_Left))
   {
     //If there's not a wall to the left of us in this box, but there is one in the next
     //box, then drive straight half-way, then use a wall follow the rest of the way
-    MOVE_Straight(BLIND_TOP_SPEED, 500);
+    MOVE_Straight(BLIND_TOP_SPEED, blind_driveForwardDist);
     IROBOT_WallFollow(DIR_CCW, 500);
   }
   else if (!PATH_GetMapInfo(ord, BOX_Right) && PATH_GetMapInfo(nextOrd, BOX_Right))
   {
     //Same as above but for the right wall
-    MOVE_Straight(BLIND_TOP_SPEED, 500);
+    MOVE_Straight(BLIND_TOP_SPEED, blind_driveForwardDist);
     IROBOT_WallFollow(DIR_CW, 500);
   }
   else
   {
     //Else just drive straight
-    MOVE_Straight(BLIND_TOP_SPEED, 1000);
+    MOVE_Straight(BLIND_TOP_SPEED, blind_driveForwardDist);
+    if(PATH_GetMapInfo(nextOrd, BOX_Front) )
+    {
+    //If the next cube has a wall in front of us, make sure we don't hit it.
+        double ir,dist;
+        resetIRPos();   //Face the IR forward
+        ir = IR_Measure();
+        dist = 500;
+        while(ir>dist)   //Drive straight until we are 0.5m from the wall
+        {
+            MOVE_DirectDrive(BLIND_TOP_SPEED,BLIND_TOP_SPEED);
+            ir = IR_Measure();
+        }
+        MOVE_DirectDrive(0,0);
+    }
+    else
+        MOVE_Straight(BLIND_TOP_SPEED, blind_driveForwardDist);
   }
 }
 
