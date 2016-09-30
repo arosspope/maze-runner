@@ -34,7 +34,7 @@ __EEPROM_DATA(9, 10, 11, 12, 13, 14, 15, 16);
 
 //Optimal speeds for driving the iROBOT
 #define DRIVE_TOP_SPEED   500
-#define BLIND_TOP_SPEED   200
+#define BLIND_TOP_SPEED   300  //original 200 
 #define DRIVE_TURN_SPEED  350
 #define DRIVE_ROTATE_SPEED 210
 
@@ -167,7 +167,7 @@ bool IROBOT_WallFollow(TDIRECTION irDir, int16_t moveDist){
   }
   
   //Get current distance reading, and set tolerance (i.e. distance from wall) at 0.707m
-  tolerance = 700;  
+  tolerance = 650;  
   dist = IR_Measure();
   MOVE_GetDistMoved();      //Reset the distance moved encoders on the iRobot
   
@@ -230,7 +230,7 @@ static void resetIRPos(void){
  */
 bool moveForwardFrom(TORDINATE ord, TSENSORS * sens){
   bool triggered = false;
-  int blind_driveForwardDist = 480;
+  int blind_driveForwardDist = 430;  //original 480
   int wall_driveForwardDist = 500;
     
   TORDINATE nextOrd;
@@ -446,14 +446,14 @@ bool victimCheck(TORDINATE vic1, TORDINATE vic2, TORDINATE curr){
   USART_OutChar(OP_SENS_IR);
   rxdata = USART_InChar();
   
-  if(rxdata == 254 || rxdata == 242){
+  if(rxdata == 254 || rxdata == 242 || rxdata == 250 || rxdata == 256){
     if(vic1.x == 6 && vic1.y == 6){
       vic1.x = curr.x; vic1.y = curr.y;
       playSong(0);
     }
-    else if(vic2.x == 6 && vic2.y == 6){
+    else if((vic2.x == 6 && vic2.y == 6) && !(vic1.x == curr.x && vic1.y == curr.y)){
       vic2.x = curr.x; vic2.y = curr.y;
-      playSong(1);
+      playSong(2);
       bothVicsFound = true;
     }
   }
