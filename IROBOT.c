@@ -42,7 +42,7 @@ __EEPROM_DATA(9, 10, 11, 12, 13, 14, 15, 16);
 static void resetIRPos(void);
 static void loadSongs(void);
 static void playSong(uint8_t songNo);
-void moveForwardFrom(TORDINATE ord);
+bool moveForwardFrom(TORDINATE ord, TSENSORS * sens);
 void updatePos(TORDINATE *ord);
 void findNextSquare(TORDINATE currOrd);
 int16_t getNextVal(TORDINATE currOrd);
@@ -68,6 +68,7 @@ void IROBOT_Test(void){
 void IROBOT_MazeRun(void){
   bool vic1Found = false; bool vic2Found = false; bool sensTrig = false;
   bool done = false;
+  TSENSORS sens;
   TORDINATE home, currOrd, wayP1, wayP2, wayP3, wayP4;
   /* Initialise waypoints */
   home.x = 1; home.y = 3; //It is assumed that the robots start position is always (1,3)
@@ -84,7 +85,7 @@ void IROBOT_MazeRun(void){
     {
       LCD_PrintStr("WP1", BM_LEFT);
       findNextSquare(currOrd);
-      moveForwardFrom(currOrd);
+      moveForwardFrom(currOrd, &sens);
       updatePos(&currOrd);
       
       done = ((currOrd.x == wayP1.x) && (currOrd.y == wayP1.y));
@@ -95,7 +96,7 @@ void IROBOT_MazeRun(void){
     {
       LCD_PrintStr("WP2", BM_LEFT);
       findNextSquare(currOrd);
-      moveForwardFrom(currOrd);
+      moveForwardFrom(currOrd, &sens);
       updatePos(&currOrd);
       
       done = ((currOrd.x == wayP2.x) && (currOrd.y == wayP2.y));
@@ -106,7 +107,7 @@ void IROBOT_MazeRun(void){
     {
       LCD_PrintStr("WP3", BM_LEFT);
       findNextSquare(currOrd);
-      moveForwardFrom(currOrd);
+      moveForwardFrom(currOrd, &sens);
       updatePos(&currOrd);
       
       done = ((currOrd.x == wayP3.x) && (currOrd.y == wayP3.y));
@@ -117,7 +118,7 @@ void IROBOT_MazeRun(void){
     {
       LCD_PrintStr("WP4", BM_LEFT);
       findNextSquare(currOrd);
-      moveForwardFrom(currOrd);
+      moveForwardFrom(currOrd, &sens);
       updatePos(&currOrd);
       
       done = ((currOrd.x == wayP4.x) && (currOrd.y == wayP4.y));
@@ -126,9 +127,10 @@ void IROBOT_MazeRun(void){
   }
 }
 
-void IROBOT_WallFollow(TDIRECTION irDir, int16_t moveDist){
+bool IROBOT_WallFollow(TDIRECTION irDir, int16_t moveDist){
   double tolerance, dist;
-  SensorsStatus_t sensStatus;
+  TSENSORS sens;
+  bool triggered = false;
   uint16_t orientation = SM_Move(0, DIR_CW);
   int16_t distmoved = 0;
   
@@ -151,7 +153,7 @@ void IROBOT_WallFollow(TDIRECTION irDir, int16_t moveDist){
   dist = IR_Measure();
   MOVE_GetDistMoved();      //Reset the distance moved encoders on the iRobot
   
-  while ((distmoved < moveDist)){ //While the distance traveled is less than required
+  while ((distmoved < moveDist) && !triggered){ //While the distance traveled is less than required
     if(irDir == DIR_CCW) //Left-Wall follow
     {
       if((dist < (tolerance + 3)) && (dist > (tolerance - 3))){  //while IR reading is between plus/minus 5mm execute following lines
@@ -179,9 +181,11 @@ void IROBOT_WallFollow(TDIRECTION irDir, int16_t moveDist){
     
     dist = IR_Measure();         //Keep checking wall distance.
     distmoved += MOVE_GetDistMoved();
+    triggered |= MOVE_CheckSensor(&sens);
   }
   
   MOVE_DirectDrive(0,0);  //Stop iRobot
+  return triggered;
 }
 
 /*! @brief Resets the position of the IR sensor back to 0 (forward facing).
@@ -206,12 +210,12 @@ static void resetIRPos(void){
  *  @note Assumes the robot has already been orientated to move into the next 
  *        grid location.
  */
-void moveForwardFrom(TORDINATE ord){
-  
-    int blind_driveForwardDist = 480;
-    int wall_driveForwardDist = 500;
+bool moveForwardFrom(TORDINATE ord, TSENSORS * sens){
+  bool triggered = false;
+  int blind_driveForwardDist = 480;
+  int wall_driveForwardDist = 500;
     
-    TORDINATE nextOrd;
+  TORDINATE nextOrd;
   nextOrd.x = ord.x; nextOrd.y = ord.y;
   
   //Calculates the next grid position based on what way the robot is facing
@@ -232,21 +236,20 @@ void moveForwardFrom(TORDINATE ord){
     IROBOT_WallFollow(DIR_CCW, wall_driveForwardDist);
     if(PATH_GetMapInfo(nextOrd, BOX_Front) )
     {
-    //If the next cube has a wall in front of us, make sure we don't hit it.
-        double ir,dist;
-        resetIRPos();   //Face the IR forward
+      //If the next cube has a wall in front of us, make sure we don't hit it.
+      double ir,dist;
+      resetIRPos();   //Face the IR forward
+      ir = IR_Measure();
+      dist = 500;
+      while(ir>dist)   //Drive straight until we are 0.5m from the wall
+      {
+        MOVE_DirectDrive(BLIND_TOP_SPEED,BLIND_TOP_SPEED);
         ir = IR_Measure();
-        dist = 500;
-        while(ir>dist)   //Drive straight until we are 0.5m from the wall
-        {
-            MOVE_DirectDrive(BLIND_TOP_SPEED,BLIND_TOP_SPEED);
-            ir = IR_Measure();
-        }
-        MOVE_DirectDrive(0,0);
+      }
+      MOVE_DirectDrive(0,0);
     }
     else
-        IROBOT_WallFollow(DIR_CCW, wall_driveForwardDist);
-    
+      IROBOT_WallFollow(DIR_CCW, wall_driveForwardDist);
   } 
   else if (PATH_GetMapInfo(ord, BOX_Right) && PATH_GetMapInfo(nextOrd, BOX_Right))
   {
@@ -254,55 +257,57 @@ void moveForwardFrom(TORDINATE ord){
     IROBOT_WallFollow(DIR_CW, wall_driveForwardDist);
     if(PATH_GetMapInfo(nextOrd, BOX_Front) )
     {
-    //If the next cube has a wall in front of us, make sure we don't hit it.
-        double ir,dist;
-        resetIRPos();   //Face the IR forward
-        ir = IR_Measure();
-        dist = 500;
-        while(ir>dist)   //Drive straight until we are 0.5m from the wall
-        {
-            MOVE_DirectDrive(BLIND_TOP_SPEED,BLIND_TOP_SPEED);
-            ir = IR_Measure();
-        }
-        MOVE_DirectDrive(0,0);
+      //If the next cube has a wall in front of us, make sure we don't hit it.
+      double ir,dist;
+      resetIRPos();   //Face the IR forward
+      ir = IR_Measure();
+      dist = 500;
+      while(ir>dist)   //Drive straight until we are 0.5m from the wall
+      {
+          MOVE_DirectDrive(BLIND_TOP_SPEED,BLIND_TOP_SPEED);
+          ir = IR_Measure();
+      }
+      MOVE_DirectDrive(0,0);
     }
     else
-        IROBOT_WallFollow(DIR_CW, wall_driveForwardDist);
+      IROBOT_WallFollow(DIR_CW, wall_driveForwardDist);
   } 
   else if (!PATH_GetMapInfo(ord, BOX_Left) && PATH_GetMapInfo(nextOrd, BOX_Left))
   {
     //If there's not a wall to the left of us in this box, but there is one in the next
     //box, then drive straight half-way, then use a wall follow the rest of the way
-    MOVE_Straight(BLIND_TOP_SPEED, blind_driveForwardDist);
+    triggered |= MOVE_Straight(BLIND_TOP_SPEED, blind_driveForwardDist, sens);
     IROBOT_WallFollow(DIR_CCW, 500);
   }
   else if (!PATH_GetMapInfo(ord, BOX_Right) && PATH_GetMapInfo(nextOrd, BOX_Right))
   {
     //Same as above but for the right wall
-    MOVE_Straight(BLIND_TOP_SPEED, blind_driveForwardDist);
+    triggered |= MOVE_Straight(BLIND_TOP_SPEED, blind_driveForwardDist, sens);
     IROBOT_WallFollow(DIR_CW, 500);
   }
   else
   {
     //Else just drive straight
-    MOVE_Straight(BLIND_TOP_SPEED, blind_driveForwardDist);
+    triggered |= MOVE_Straight(BLIND_TOP_SPEED, blind_driveForwardDist, sens);
     if(PATH_GetMapInfo(nextOrd, BOX_Front) )
     {
-    //If the next cube has a wall in front of us, make sure we don't hit it.
-        double ir,dist;
-        resetIRPos();   //Face the IR forward
-        ir = IR_Measure();
-        dist = 500;
-        while(ir>dist)   //Drive straight until we are 0.5m from the wall
-        {
-            MOVE_DirectDrive(BLIND_TOP_SPEED,BLIND_TOP_SPEED);
-            ir = IR_Measure();
-        }
-        MOVE_DirectDrive(0,0);
+      //If the next cube has a wall in front of us, make sure we don't hit it.
+      double ir,dist;
+      resetIRPos();   //Face the IR forward
+      ir = IR_Measure();
+      dist = 500;
+      while(ir>dist)   //Drive straight until we are 0.5m from the wall
+      {
+          MOVE_DirectDrive(BLIND_TOP_SPEED,BLIND_TOP_SPEED);
+          ir = IR_Measure();
+      }
+      MOVE_DirectDrive(0,0);
     }
     else
-        MOVE_Straight(BLIND_TOP_SPEED, blind_driveForwardDist);
+      triggered |= MOVE_Straight(BLIND_TOP_SPEED, blind_driveForwardDist, sens);
   }
+  
+  return triggered;
 }
 
 /*! @brief Gets the flood fill value of the box in front of the robots 

@@ -34,10 +34,11 @@ void IROBOT_Start(void);
  *
  *  @param irDir - Which way to face the direction of ir sensor (for left or right follow)
  *  @param moveDist - How far the robot should wall follow until it needs to stop (mm)
+ *  @param sensor - A struct to hold information about sensors
  * 
- *  @return void
+ *  @return bool - TRUE if interrupted by sensor
  */
-void IROBOT_WallFollow(TDIRECTION irDir, int16_t moveDist);
+bool IROBOT_WallFollow(TDIRECTION irDir, int16_t moveDist);
 
 //TODO: Must remove
 void IROBOT_Test(void);

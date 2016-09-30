@@ -55,9 +55,11 @@ bool MOVE_Rotate(uint16_t velocity, uint16_t angle, TDIRECTION dir);
  *
  *  @param velocity - Speed at which the robot can move (-500 - 500 mm/s)
  *  @param distance - distance that the robot must travel.
+ *  @param sens - Struct to store what triggered.
+ * 
  *  @return bool - True if movement was interrupted by a sensor
  */
-bool MOVE_Straight(int16_t velocity, uint16_t distance);
+bool MOVE_Straight(int16_t velocity, uint16_t distance, TSENSORS * sens);
 
 /* @brief Will tell the iRobot to start moving each will at particular velocity.
  *        No distance checking is used. Robot needs to be explicity stopped.

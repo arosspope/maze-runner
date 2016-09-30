@@ -26,9 +26,8 @@ int16_t MOVE_GetDistMoved(void){
   return (int16_t) rxdata.l;
 }
 
-bool MOVE_Straight(int16_t velocity, uint16_t distance){
+bool MOVE_Straight(int16_t velocity, uint16_t distance, TSENSORS * sens){
   uint16union_t rxdata;
-  TSENSORS sensStatus;
   int16_t distanceTravelled = 0;
   bool sensorTrig = false;
 
@@ -44,7 +43,7 @@ bool MOVE_Straight(int16_t velocity, uint16_t distance){
       distanceTravelled += (MOVE_GetDistMoved() * -1); //Negative vel returns neg dist (must normalise)
     }
 
-    sensorTrig = MOVE_CheckSensor(&sensStatus);
+    sensorTrig = MOVE_CheckSensor(sens);
   }
 
   MOVE_DirectDrive(0, 0); //Tell the IROBOT to stop moving
@@ -109,7 +108,7 @@ bool MOVE_CheckSensor(TSENSORS * sensors){
   USART_OutChar(OP_QUERY);
   USART_OutChar(3);         //Get information about 3 sensors TODO: Implement victim
   USART_OutChar(OP_SENS_BUMP);
-  USART_OutChar(OP_SENS_WALL);
+  USART_OutChar(OP_SENS_VWALL);
   USART_OutChar(OP_SENS_IR);
   
   //1. Packet ID: 7 (Bump and Wheel drop)
