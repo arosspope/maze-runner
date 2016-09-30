@@ -46,6 +46,7 @@ bool moveForwardFrom(TORDINATE ord, TSENSORS * sens);
 void updatePos(TORDINATE *ord);
 void findNextSquare(TORDINATE currOrd);
 int16_t getNextVal(TORDINATE currOrd);
+bool victimCheck(TORDINATE vic1, TORDINATE vic2, TORDINATE curr);
 /* End Private function prototypes */
 
 bool IROBOT_Init(void){
@@ -69,7 +70,7 @@ void IROBOT_MazeRun(void){
   bool vic1Found = false; bool vic2Found = false; bool sensTrig = false;
   bool done = false;
   TSENSORS sens;
-  TORDINATE home, currOrd, wayP1, wayP2, wayP3, wayP4;
+  TORDINATE home, currOrd, wayP1, wayP2, wayP3, wayP4, vic1, vic2;
   /* Initialise waypoints */
   home.x = 1; home.y = 3; //It is assumed that the robots start position is always (1,3)
   currOrd.x = 1; currOrd.y = 3;
@@ -77,6 +78,8 @@ void IROBOT_MazeRun(void){
   wayP2.x = 3; wayP2.y = 3;
   wayP3.x = 3; wayP3.y = 1;
   wayP4.x = 0; wayP4.y = 0;
+  vic1.x = 6; vic1.y = 6;
+  vic2.x = 6; vic2.y = 6;
   
   while(!(vic1Found && vic2Found) && !sensTrig)
   {
@@ -84,6 +87,7 @@ void IROBOT_MazeRun(void){
     while(!done)
     {
       LCD_PrintStr("WP1", BM_LEFT);
+      victimCheck(vic1, vic2, currOrd);
       findNextSquare(currOrd);
       moveForwardFrom(currOrd, &sens);
       updatePos(&currOrd);
@@ -95,6 +99,7 @@ void IROBOT_MazeRun(void){
     while(!done)
     {
       LCD_PrintStr("WP2", BM_LEFT);
+      victimCheck(vic1, vic2, currOrd);
       findNextSquare(currOrd);
       moveForwardFrom(currOrd, &sens);
       updatePos(&currOrd);
@@ -106,6 +111,7 @@ void IROBOT_MazeRun(void){
     while(!done)
     {
       LCD_PrintStr("WP3", BM_LEFT);
+      victimCheck(vic1, vic2, currOrd);
       findNextSquare(currOrd);
       moveForwardFrom(currOrd, &sens);
       updatePos(&currOrd);
@@ -117,6 +123,7 @@ void IROBOT_MazeRun(void){
     while(!done)
     {
       LCD_PrintStr("WP4", BM_LEFT);
+      victimCheck(vic1, vic2, currOrd);
       findNextSquare(currOrd);
       moveForwardFrom(currOrd, &sens);
       updatePos(&currOrd);
@@ -124,6 +131,17 @@ void IROBOT_MazeRun(void){
       done = ((currOrd.x == wayP4.x) && (currOrd.y == wayP4.y));
     }
     done = false;
+  }
+  done = false;
+  PATH_Plan(currOrd, home);
+  while(!done)
+  {
+    LCD_PrintStr("Home", BM_LEFT);
+    findNextSquare(currOrd);
+    moveForwardFrom(currOrd, &sens);
+    updatePos(&currOrd);
+
+    done = ((currOrd.x == home.x) && (currOrd.y == home.y));
   }
 }
 
@@ -420,6 +438,28 @@ void updatePos(TORDINATE *ord){
     }
 }
 
+bool victimCheck(TORDINATE vic1, TORDINATE vic2, TORDINATE curr){
+  bool bothVicsFound = false;
+  uint8_t rxdata;
+          
+  USART_OutChar(OP_SENSORS);
+  USART_OutChar(OP_SENS_IR);
+  rxdata = USART_InChar();
+  
+  if(rxdata == 254 || rxdata == 242){
+    if(vic1.x == 6 && vic1.y == 6){
+      vic1.x = curr.x; vic1.y = curr.y;
+      playSong(0);
+    }
+    else if(vic2.x == 6 && vic2.y == 6){
+      vic2.x = curr.x; vic2.y = curr.y;
+      playSong(1);
+      bothVicsFound = true;
+    }
+  }
+  
+  return bothVicsFound;
+}
 /*! @brief Loads the 4 pre-defined songs onto the iRobot
  *
  */
