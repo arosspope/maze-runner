@@ -28,7 +28,7 @@ int16_t MOVE_GetDistMoved(void){
 
 bool MOVE_Straight(int16_t velocity, uint16_t distance){
   uint16union_t rxdata;
-  SensorsStatus_t sensStatus;
+  TSENSORS sensStatus;
   int16_t distanceTravelled = 0;
   bool sensorTrig = false;
 
@@ -54,7 +54,7 @@ bool MOVE_Straight(int16_t velocity, uint16_t distance){
 
 bool MOVE_Rotate(uint16_t velocity, uint16_t angle, TDIRECTION dir){
   uint16union_t rxdata;
-  SensorsStatus_t sensStatus;
+  TSENSORS sensStatus;
   int16_t angleMoved = 0;
   bool sensorTrig = false;
 
@@ -101,8 +101,9 @@ void MOVE_DirectDrive(int16_t leftWheelVel, int16_t rightWheelVel){
   USART_OutChar(leftBytes.s.Lo);
 }
 
-bool MOVE_CheckSensor(SensorsStatus_t * sensStatus){
+bool MOVE_CheckSensor(TSENSORS * sensors){
   uint8_t data;
+  sensors->bump = false; sensors->wall = false; sensors->victim = false;
 
   //Tell the Robot to send back information regarding a group of sensors
   USART_OutChar(OP_QUERY);
@@ -112,18 +113,16 @@ bool MOVE_CheckSensor(SensorsStatus_t * sensStatus){
   USART_OutChar(OP_SENS_IR);
   
   //1. Packet ID: 7 (Bump and Wheel drop)
-  //sensStatus->sensBits.bump = (USART_InChar() & 0b00000011);   //We only care about the bump data so AND with mask
-  sensStatus->sensBits.bump = 0;
+  sensors->bump = (USART_InChar() & 0b00000011);   //We only care about the bump data so AND with mask
+  
   //2. Packet ID: 8 (Wall)
-//  sensStatus->sensBits.wall = USART_InChar();
-  sensStatus->sensBits.wall = 0;
+  //  sensStatus->sensBits.wall = USART_InChar();
 
   //3. Packet ID: 17 (Infrared Byte)
 //  data = USART_InChar();
 //  if(data >= 248 && data <= 254)  //A particular range of IR values indicates that we are in prescense of home base
 //    sensStatus->sensBits.victim = 1;
-  sensStatus->sensBits.victim = 0;
-  USART_InChar(); USART_InChar(); USART_InChar();
+  USART_InChar(); USART_InChar();
   //return (sensStatus->sensors > 0); //A value greater than 0 indicates one of the sensors have been tripped
-  return 0;
+  return (sensors->bump || sensors->wall || sensors->victim);
 }

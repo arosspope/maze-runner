@@ -28,6 +28,13 @@ typedef union
   } sensBits;
 } SensorsStatus_t;   
 
+typedef struct {
+    bool bump;      /*!< The bump status bit. */
+    bool wall;      /*!< The wall status bit. */
+    bool victim;    /*!< The wall status bit. */
+} TSENSORS;
+
+
 /*! @brief Sets up the move module before first use
  *
  *  @return bool - TRUE if the move module was successfully initialized.
@@ -64,7 +71,7 @@ void MOVE_DirectDrive(int16_t leftWheelVel, int16_t rightWheelVel);
  *
  * @return TRUE - if one of the sensors have been tripped
  */
-bool MOVE_CheckSensor(SensorsStatus_t * sensStatus);
+bool MOVE_CheckSensor(TSENSORS * sensors);
 
 /* @brief Returns how far the robot has moved since last being called
  *
