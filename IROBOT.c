@@ -33,8 +33,9 @@ __EEPROM_DATA(9, 10, 11, 12, 13, 14, 15, 16);
 /* Loading Map data to EEPROM; ADDR offset 0x40 - TODO: Must do */
 
 //Optimal speeds for driving the iROBOT
-#define DRIVE_TOP_SPEED   250
-#define DRIVE_TURN_SPEED  150
+#define DRIVE_TOP_SPEED   500
+#define BLIND_TOP_SPEED   250
+#define DRIVE_TURN_SPEED  310
 #define DRIVE_ROTATE_SPEED 210
 
 /* Private function prototypes */
@@ -75,7 +76,7 @@ void IROBOT_MazeRun(void){
   {
     if(!PATH_GetMapInfo(currOrd, BOX_Left))
     {
-      MOVE_Rotate(DRIVE_ROTATE_SPEED, 90, DIR_CCW);
+      MOVE_Rotate(DRIVE_ROTATE_SPEED, 87, DIR_CCW);
       PATH_UpdateOrient(1, DIR_CCW);
     } 
     else if (!PATH_GetMapInfo(currOrd, BOX_Front))
@@ -84,7 +85,7 @@ void IROBOT_MazeRun(void){
     } 
     else if (!PATH_GetMapInfo(currOrd, BOX_Right))
     {
-      MOVE_Rotate(DRIVE_ROTATE_SPEED, 90, DIR_CW);
+      MOVE_Rotate(DRIVE_ROTATE_SPEED, 87, DIR_CW);
       PATH_UpdateOrient(1, DIR_CW);
     } else {
       //Only move is to come back from where we came from
@@ -111,12 +112,24 @@ void IROBOT_MazeRun(void){
 void IROBOT_WallFollow(TDIRECTION irDir, int16_t moveDist){
   double tolerance, dist;
   SensorsStatus_t sensStatus;
+  uint16_t orientation = SM_Move(0, DIR_CW);
   int16_t distmoved = 0;
   
   //Reset IR position then face IR sensor 45 degs in particular direction
   //(i.e. left or right wall follow)
-  resetIRPos();
-  SM_Move(25, irDir);
+  //resetIRPos();
+  
+  if(irDir == DIR_CW){
+    if(orientation != 25){
+      resetIRPos();
+      SM_Move(25, irDir);
+    }
+  }else{
+    if(orientation != 175){
+      resetIRPos();
+      SM_Move(25, irDir);
+    }
+  }
   
   //Get current distance reading, and set tolerance (i.e. distance from wall) at 0.707m
   tolerance = 707;  
@@ -126,10 +139,10 @@ void IROBOT_WallFollow(TDIRECTION irDir, int16_t moveDist){
   while ((distmoved < moveDist)){ //While the distance traveled is less than required
     if(irDir == DIR_CCW) //Left-Wall follow
     {
-      if((dist < (tolerance + 5)) && (dist > (tolerance - 5))){  //while IR reading is between plus/minus 5mm execute following lines
+      if((dist < (tolerance + 3)) && (dist > (tolerance - 3))){  //while IR reading is between plus/minus 5mm execute following lines
         MOVE_DirectDrive(DRIVE_TOP_SPEED, DRIVE_TOP_SPEED);      //left wheel and right wheel drive same speed.
       }
-      else if (dist < (tolerance - 5)){      //Robot to close to wall
+      else if (dist < (tolerance - 3)){      //Robot to close to wall
         MOVE_DirectDrive(DRIVE_TOP_SPEED, DRIVE_TURN_SPEED);
       }
       else{                                  //Robot to far away from wall
@@ -138,10 +151,10 @@ void IROBOT_WallFollow(TDIRECTION irDir, int16_t moveDist){
     }
     else //Right-wall follow
     {
-      if((dist < (tolerance + 5)) && (dist > (tolerance - 5))){ 
+      if((dist < (tolerance + 3)) && (dist > (tolerance - 3))){ 
         MOVE_DirectDrive(DRIVE_TOP_SPEED, DRIVE_TOP_SPEED);
       }
-      else if (dist < (tolerance - 5)){
+      else if (dist < (tolerance - 3)){
         MOVE_DirectDrive(DRIVE_TURN_SPEED, DRIVE_TOP_SPEED);
       }
       else{
@@ -208,19 +221,19 @@ void moveForwardFrom(TORDINATE ord){
   {
     //If there's not a wall to the left of us in this box, but there is one in the next
     //box, then drive straight half-way, then use a wall follow the rest of the way
-    MOVE_Straight(DRIVE_TOP_SPEED, 500);
+    MOVE_Straight(BLIND_TOP_SPEED, 500);
     IROBOT_WallFollow(DIR_CCW, 500);
   }
   else if (!PATH_GetMapInfo(ord, BOX_Right) && PATH_GetMapInfo(nextOrd, BOX_Right))
   {
     //Same as above but for the right wall
-    MOVE_Straight(DRIVE_TOP_SPEED, 500);
+    MOVE_Straight(BLIND_TOP_SPEED, 500);
     IROBOT_WallFollow(DIR_CW, 500);
   }
   else
   {
     //Else just drive straight
-    MOVE_Straight(DRIVE_TOP_SPEED, 1000);
+    MOVE_Straight(BLIND_TOP_SPEED, 1000);
   }
 }
 
