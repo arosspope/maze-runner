@@ -43,6 +43,9 @@ static void resetIRPos(void);
 static void loadSongs(void);
 static void playSong(uint8_t songNo);
 void moveForwardFrom(TORDINATE ord);
+void updatePos(TORDINATE *ord);
+void findNextSquare(TORDINATE currOrd);
+int16_t getNextVal(TORDINATE currOrd);
 /* End Private function prototypes */
 
 bool IROBOT_Init(void){
@@ -64,48 +67,62 @@ void IROBOT_Test(void){
 
 void IROBOT_MazeRun(void){
   bool vic1Found = false; bool vic2Found = false; bool sensTrig = false;
-  TORDINATE home, currOrd, wayP1, wayP2, wayP3;
+  bool done = false;
+  TORDINATE home, currOrd, wayP1, wayP2, wayP3, wayP4;
   /* Initialise waypoints */
   home.x = 1; home.y = 3; //It is assumed that the robots start position is always (1,3)
   currOrd.x = 1; currOrd.y = 3;
-  wayP1.x = 3; wayP1.y = 3;
-  wayP2.x = 3; wayP2.y = 1;
-  wayP3.x = 0; wayP3.y = 0;
+  wayP1.x = 2; wayP1.y = 3;
+  wayP2.x = 3; wayP2.y = 3;
+  wayP3.x = 3; wayP3.y = 1;
+  wayP4.x = 0; wayP4.y = 0;
   
   while(!(vic1Found && vic2Found) && !sensTrig)
   {
-    if(!PATH_GetMapInfo(currOrd, BOX_Left))
+    PATH_Plan(currOrd, wayP1);
+    while(!done)
     {
-      MOVE_Rotate(DRIVE_ROTATE_SPEED, 87, DIR_CCW);
-      PATH_UpdateOrient(1, DIR_CCW);
-    } 
-    else if (!PATH_GetMapInfo(currOrd, BOX_Front))
-    {
-      //Don't need to rotate
-    } 
-    else if (!PATH_GetMapInfo(currOrd, BOX_Right))
-    {
-      MOVE_Rotate(DRIVE_ROTATE_SPEED, 87, DIR_CW);
-      PATH_UpdateOrient(1, DIR_CW);
-    } else {
-      //Only move is to come back from where we came from
-      MOVE_Rotate(DRIVE_ROTATE_SPEED, 180, DIR_CW);
-      PATH_UpdateOrient(2, DIR_CW);
+      LCD_PrintStr("WP1", BM_LEFT);
+      findNextSquare(currOrd);
+      moveForwardFrom(currOrd);
+      updatePos(&currOrd);
+      
+      done = ((currOrd.x == wayP1.x) && (currOrd.y == wayP1.y));
     }
-
-    moveForwardFrom(currOrd); //Move Forward from the current coordiante
-
-    //Update the co-ordinates
-    switch(PATH_RotationFactor){
-      case 0:
-        currOrd.x = currOrd.x - 1; break;
-      case 1:
-        currOrd.y = currOrd.y + 1; break;
-      case 2:
-        currOrd.x = currOrd.x + 1; break;
-      case 3:
-       currOrd.y = currOrd.y - 1; break;
+    done = false;
+    PATH_Plan(currOrd, wayP2);
+    while(!done)
+    {
+      LCD_PrintStr("WP2", BM_LEFT);
+      findNextSquare(currOrd);
+      moveForwardFrom(currOrd);
+      updatePos(&currOrd);
+      
+      done = ((currOrd.x == wayP2.x) && (currOrd.y == wayP2.y));
     }
+    done = false;
+    PATH_Plan(currOrd, wayP3);
+    while(!done)
+    {
+      LCD_PrintStr("WP3", BM_LEFT);
+      findNextSquare(currOrd);
+      moveForwardFrom(currOrd);
+      updatePos(&currOrd);
+      
+      done = ((currOrd.x == wayP3.x) && (currOrd.y == wayP3.y));
+    }
+    done = false;
+    PATH_Plan(currOrd, wayP4);
+    while(!done)
+    {
+      LCD_PrintStr("WP4", BM_LEFT);
+      findNextSquare(currOrd);
+      moveForwardFrom(currOrd);
+      updatePos(&currOrd);
+      
+      done = ((currOrd.x == wayP4.x) && (currOrd.y == wayP4.y));
+    }
+    done = false;
   }
 }
 
@@ -115,10 +132,8 @@ void IROBOT_WallFollow(TDIRECTION irDir, int16_t moveDist){
   uint16_t orientation = SM_Move(0, DIR_CW);
   int16_t distmoved = 0;
   
-  //Reset IR position then face IR sensor 45 degs in particular direction
-  //(i.e. left or right wall follow)
-  //resetIRPos();
-  
+  //Reset IR position then face IR sensor 45 degs in particular direction, if its
+  //already at that position - dont do anything
   if(irDir == DIR_CW){
     if(orientation != 25){
       resetIRPos();
@@ -235,6 +250,116 @@ void moveForwardFrom(TORDINATE ord){
     //Else just drive straight
     MOVE_Straight(BLIND_TOP_SPEED, 1000);
   }
+}
+
+/*! @brief Gets the flood fill value of the box in front of the robots 
+ *         virtual position.
+ *  
+ *  @param currOrd - The current virtual position of the robot. 
+ *  @return Flood fill value of the square in front of the robot
+ */
+int16_t getNextVal(TORDINATE currOrd){
+  switch(PATH_RotationFactor){
+      case 0:
+        currOrd.x = currOrd.x - 1; break;
+      case 1:
+        currOrd.y = currOrd.y + 1; break;
+      case 2:
+        currOrd.x = currOrd.x + 1; break;
+      case 3:
+        currOrd.y = currOrd.y - 1; break;
+    }
+  
+  return PATH_Path[currOrd.x][currOrd.y];
+}
+
+/*! @brief Finds the next square to move into (based on flood fill) and orient
+ *         the robot to face that square.
+ * 
+ *  @param currOrd - The box to move from
+ */
+void findNextSquare(TORDINATE currOrd){
+  bool frontLowest = false;
+  bool rightLowest = false;
+  bool leftLowest = false;
+  bool behindLowest = false;
+  int16_t lowestSoFar = PATH_Path[currOrd.x][currOrd.y];
+  int16_t temp;
+  
+  if(!PATH_GetMapInfo(currOrd, BOX_Front)){
+    temp = getNextVal(currOrd);
+    if(temp < lowestSoFar && temp != -1){
+      frontLowest = true;
+      lowestSoFar = temp;
+    }
+  }
+  
+  if(!PATH_GetMapInfo(currOrd, BOX_Left)){
+    PATH_UpdateOrient(1, DIR_CCW); //Virtually turn the robot
+    temp = getNextVal(currOrd);
+    if(temp < lowestSoFar && temp != -1){
+      frontLowest = false;
+      leftLowest = true;
+      lowestSoFar = temp;
+    }
+    PATH_UpdateOrient(1, DIR_CW); //Virtually rest the robot
+  }
+  
+  if(!PATH_GetMapInfo(currOrd, BOX_Right)){
+    PATH_UpdateOrient(1, DIR_CW); //Virtually turn the robot
+    temp = getNextVal(currOrd);
+    if(temp < lowestSoFar && temp != -1){
+      frontLowest = false;
+      leftLowest = false;
+      rightLowest = true;
+      lowestSoFar = temp;
+    }
+    PATH_UpdateOrient(1, DIR_CCW); //Virtually rest the robot
+  }
+  
+  if(!PATH_GetMapInfo(currOrd, BOX_Back)){
+    PATH_UpdateOrient(2, DIR_CCW); //Virtually turn the robot
+    temp = getNextVal(currOrd);
+    if(temp < lowestSoFar && temp != -1){
+      frontLowest = false;
+      leftLowest = false;
+      rightLowest = false;
+      behindLowest = true;
+      lowestSoFar = temp;
+    }
+    PATH_UpdateOrient(2, DIR_CW); //Virtually rest the robot
+  }
+  
+  if(frontLowest){
+    //Do Nothing to rotate
+  } else if (leftLowest){
+    MOVE_Rotate(DRIVE_ROTATE_SPEED, 87, DIR_CCW);
+    PATH_UpdateOrient(1, DIR_CCW);
+  } else if (rightLowest){
+    MOVE_Rotate(DRIVE_ROTATE_SPEED, 87, DIR_CW);
+    PATH_UpdateOrient(1, DIR_CW);
+  } else if (behindLowest){
+    MOVE_Rotate(DRIVE_ROTATE_SPEED, 180, DIR_CCW);
+    PATH_UpdateOrient(2, DIR_CCW);
+  }
+  
+}
+
+/*! @brief Updates the coordinate position based on the robots forward facing direction.
+ *   
+ *  @param ord - The ordinate to update
+ */
+void updatePos(TORDINATE *ord){
+  switch(PATH_RotationFactor){
+      case 0:
+        ord->x = ord->x - 1; break;
+      case 1:
+        ord->y = ord->y + 1; break;
+      case 2:
+        ord->x = ord->x + 1; break;
+      case 3:
+        ord->y = ord->y - 1; break;
+    }
 }
 
 /*! @brief Loads the 4 pre-defined songs onto the iRobot

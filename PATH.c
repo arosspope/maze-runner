@@ -44,7 +44,7 @@ bool PATH_Init(void){
 
 bool PATH_Plan(TORDINATE robotOrd, TORDINATE waypOrd){
   bool done = false;
-  uint8_t currentPathDistance; //How far the 'water' has flowed
+  int8_t currentPathDistance; //How far the 'water' has flowed
   uint8_t x, y;
   
   //Reset the Path map - Each value contains '-1' to signify no path
@@ -55,7 +55,6 @@ bool PATH_Plan(TORDINATE robotOrd, TORDINATE waypOrd){
   }
 
   PATH_Path[waypOrd.x][waypOrd.y] = 0; //Set the waypoint to flood point 0
-  currentPathDistance = 1;        //i.e. the next 'water' level to set
   
   while(!done) //Begin flooding the maze until we find a path
   {
@@ -67,17 +66,18 @@ bool PATH_Plan(TORDINATE robotOrd, TORDINATE waypOrd){
 
         //If there is a neighbour cell that has been reached, then the current cell is next
         //in line for the fill
-        if(highestNeighbourCell(x,y) != -1)
-          PATH_Path[x][y] = currentPathDistance;
+        currentPathDistance = highestNeighbourCell(x,y);
+        if(currentPathDistance != -1)
+          PATH_Path[x][y] = (currentPathDistance+1);
       }
     }
 
     if(PATH_Path[robotOrd.x][robotOrd.y] != -1) //A Path has been found to the robot
       done = true;
 
-    currentPathDistance++; //Raise the flood 'waters'
+    //currentPathDistance++; //Raise the flood 'waters'
   }
-  
+  LCD_PrintInt(currentPathDistance, TOP_LEFT);
   return true;
 }
 
