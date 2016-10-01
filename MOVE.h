@@ -31,9 +31,7 @@ typedef union
 typedef struct {
     bool bump;      /*!< The bump status bit. */
     bool wall;      /*!< The wall status bit. */
-    bool victim;    /*!< The wall status bit. */
 } TSENSORS;
-
 
 /*! @brief Sets up the move module before first use
  *
@@ -46,16 +44,17 @@ bool MOVE_Init(void);
  * @param velocity - The velocity to turn at (positive value only).
  * @param angle - Angle to rotate through in specified direction.
  * @param dir - The direction to rotate
+ * @param sensors - A struct of booleans to indicate which sensor was tripped
  *
  * @return bool - True if movement was interrupted by sensor
  */
-bool MOVE_Rotate(uint16_t velocity, uint16_t angle, TDIRECTION dir);
+bool MOVE_Rotate(uint16_t velocity, uint16_t angle, TDIRECTION dir, TSENSORS * sens);
 
 /*! @brief Drive the robot in a straight line.
  *
  *  @param velocity - Speed at which the robot can move (-500 - 500 mm/s)
  *  @param distance - distance that the robot must travel.
- *  @param sens - Struct to store what triggered.
+ *  @param sens - A struct of booleans to indicate which sensor was tripped
  * 
  *  @return bool - True if movement was interrupted by a sensor
  */
@@ -71,6 +70,7 @@ void MOVE_DirectDrive(int16_t leftWheelVel, int16_t rightWheelVel);
 
 /* @brief Determines if any of the relevant sensors have been triggered.
  *
+ * @param sensors - A struct of booleans to indicate which sensor was tripped
  * @return TRUE - if one of the sensors have been tripped
  */
 bool MOVE_CheckSensor(TSENSORS * sensors);

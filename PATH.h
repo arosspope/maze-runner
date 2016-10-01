@@ -22,9 +22,10 @@ typedef enum {
   BOX_Right,
   BOX_Back,
   BOX_Left,
-  BOX_Vic,
-  BOX_Home,
-  BOX_BeenThere,
+  BOX_PFront,
+  BOX_PRight,
+  BOX_PBack,
+  BOX_PLeft,
   BOX_All
 } TBOX_INFO; /*< User can specify which information about a BOX they want to grab */
 
@@ -75,6 +76,16 @@ void PATH_UpdateOrient(uint8_t num90Turns, TDIRECTION dir);
  *  @return TRUE - If successfull
  */
 bool PATH_Plan(TORDINATE robotOrd, TORDINATE waypOrd);
+
+/*! @brief Used to indicate that a virtual wall was found in the maze space. Will
+ *         update Map accordingly.
+ *
+ *  NOTE: This function assumes the virtual wall was found in front of the robot
+ *  in the maze.
+ *
+ *  @param ord - The coordinate where the virtual wall was found.
+ */
+void PATH_VirtWallFoundAt(TORDINATE ord);
 #ifdef	__cplusplus
 }
 #endif

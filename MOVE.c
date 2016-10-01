@@ -27,7 +27,6 @@ int16_t MOVE_GetDistMoved(void){
 }
 
 bool MOVE_Straight(int16_t velocity, uint16_t distance, TSENSORS * sens){
-  uint16union_t rxdata;
   int16_t distanceTravelled = 0;
   bool sensorTrig = false;
 
@@ -51,9 +50,8 @@ bool MOVE_Straight(int16_t velocity, uint16_t distance, TSENSORS * sens){
   return sensorTrig;
 }
 
-bool MOVE_Rotate(uint16_t velocity, uint16_t angle, TDIRECTION dir){
+bool MOVE_Rotate(uint16_t velocity, uint16_t angle, TDIRECTION dir, TSENSORS * sens){
   uint16union_t rxdata;
-  TSENSORS sensStatus;
   int16_t angleMoved = 0;
   bool sensorTrig = false;
 
@@ -80,7 +78,7 @@ bool MOVE_Rotate(uint16_t velocity, uint16_t angle, TDIRECTION dir){
       angleMoved += ((int16_t) rxdata.l * -1); //CW direction returns negative angles
     }
 
-    sensorTrig = MOVE_CheckSensor(&sensStatus);
+    sensorTrig = MOVE_CheckSensor(sens);
   }
 
   MOVE_DirectDrive(0, 0); //Tell the IROBOT to stop rotating
@@ -102,7 +100,7 @@ void MOVE_DirectDrive(int16_t leftWheelVel, int16_t rightWheelVel){
 
 bool MOVE_CheckSensor(TSENSORS * sensors){
   uint8_t data;
-  sensors->bump = false; sensors->wall = false; sensors->victim = false;
+  sensors->bump = false; sensors->wall = false;
 
   //Tell the Robot to send back information regarding a group of sensors
   USART_OutChar(OP_QUERY);
@@ -115,12 +113,6 @@ bool MOVE_CheckSensor(TSENSORS * sensors){
   
   //2. Packet ID: 8 (Wall)
   //  sensStatus->sensBits.wall = USART_InChar();
-
-  //3. Packet ID: 17 (Infrared Byte)
-//  data = USART_InChar();
-//  if(data >= 248 && data <= 254)  //A particular range of IR values indicates that we are in prescense of home base
-//    sensStatus->sensBits.victim = 1;
   USART_InChar();
-  //return (sensStatus->sensors > 0); //A value greater than 0 indicates one of the sensors have been tripped
-  return (sensors->bump || sensors->wall || sensors->victim);
+  return (sensors->bump || sensors->wall);
 }

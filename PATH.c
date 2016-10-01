@@ -11,15 +11,16 @@
 #include "PATH.h"
 #include "LCD.h"
 
-#define WALL_MASK 0b11110000
-#define INFO_MASK 0b00001111
-#define F_MASK 0b10000000 //Front wall of the box
-#define R_MASK 0b01000000 //Right-hand wall of box
-#define B_MASK 0b00100000 //Back/Behind wall of box
-#define L_MASK 0b00010000 //Left-hand wall of box
-#define V_MASK 0b00001000 //Victim within box?
-#define H_MASK 0b00000100 //Home base?
-#define C_MASK 0b00000010 
+#define VWALLS  0b11110000
+#define PWALLS  0b00001111
+#define FRONT   0b10000000 //Used to determine prescense of Virtual & Physical Walls
+#define RIGHT   0b01000000 
+#define BACK    0b00100000 
+#define LEFT    0b00010000
+#define P_FRONT 0b00001000 //Used to determine prescense of Physical Walls only
+#define P_RIGHT 0b00000100
+#define P_BACK  0b00000010
+#define P_LEFT  0b00000001
 
 /* Private Function prototypes */
 uint8_t getNormalisedBoxVal(uint8_t x, uint8_t y);
@@ -28,14 +29,14 @@ int8_t highestNeighbourCell(uint8_t x, uint8_t y);
 
 uint8_t PATH_RotationFactor;
 static uint8_t Map[5][4] = {  /*< Digital map of the maze space */
-  {0b10110000, 0b11000000, 0b10010000, 0b11000000},
-  {0b10010000, 0b01100000, 0b01010000, 0b01110100},
-  {0b00010000, 0b10100000, 0b00000000, 0b11100000},
-  {0b00010000, 0b11100000, 0b01010000, 0b11010000},
-  {0b00110000, 0b10100000, 0b00100000, 0b01100000}
+  {0b10111011, 0b11001100, 0b10011001, 0b11001100},
+  {0b10011001, 0b01100110, 0b01010101, 0b01110111},
+  {0b00010001, 0b10101010, 0b00000000, 0b11101110},
+  {0b00010001, 0b11101110, 0b01010101, 0b11011101},
+  {0b00110011, 0b10101010, 0b00100010, 0b01100110}
 };
 
-int8_t PATH_Path[5][4]; /*< Path using flood fill method*/
+int8_t PATH_Path[5][4]; /*< Path between two waypoints using flood fill method */
 
 bool PATH_Init(void){
   PATH_RotationFactor = 0;
@@ -68,16 +69,16 @@ bool PATH_Plan(TORDINATE robotOrd, TORDINATE waypOrd){
         //in line for the fill
         currentPathDistance = highestNeighbourCell(x,y);
         if(currentPathDistance != -1)
-          PATH_Path[x][y] = (currentPathDistance+1);
+          PATH_Path[x][y] = (currentPathDistance + 1);
       }
     }
 
     if(PATH_Path[robotOrd.x][robotOrd.y] != -1) //A Path has been found to the robot
       done = true;
-
-    //currentPathDistance++; //Raise the flood 'waters'
   }
-  LCD_PrintInt(currentPathDistance, TOP_LEFT);
+
+  //TODO: It might be worthwhile to create a counter that has a max of 400, that
+  //      will indicate whether or not a path can be found between two points
   return true;
 }
 
@@ -86,31 +87,34 @@ uint8_t PATH_GetMapInfo(TORDINATE boxOrd, TBOX_INFO info){
   
   if(boxOrd.x < 5 && boxOrd.y < 4)
   {
+    //Normailses the map direction in relation to the robot
     temp = getNormalisedBoxVal(boxOrd.x, boxOrd.y);
-
+    //Will return the info required by the user
     switch(info)
     {
       case BOX_Front:
-        box = (temp & F_MASK);
+        box = (temp & FRONT);
         break;
       case BOX_Right:
-        box = (temp & R_MASK);
+        box = (temp & RIGHT);
         break;
       case BOX_Back:
-        box = (temp & B_MASK);
+        box = (temp & BACK);
         break;
       case BOX_Left:
-        box = (temp & L_MASK);
+        box = (temp & LEFT);
         break;
-      case BOX_Vic:
-        box = (temp & V_MASK);
+      case BOX_PFront:
+        box = (temp & P_FRONT);
         break;
-      case BOX_Home:
-        box = (temp & H_MASK);
+      case BOX_PRight:
+        box = (temp & P_RIGHT);
         break;
-      case BOX_BeenThere:
-        box = (temp & C_MASK);
+      case BOX_PBack:
+        box = (temp & P_BACK);
         break;
+      case BOX_PLeft:
+        box = (temp & P_LEFT);
       case BOX_All:
         box = temp;
         break;
@@ -118,6 +122,12 @@ uint8_t PATH_GetMapInfo(TORDINATE boxOrd, TBOX_INFO info){
   }
   
   return box;
+}
+
+void PATH_VirtWallFoundAt(TORDINATE ord){
+  //Assume wall was found in front of robot, shift by rotation factor and assign
+  uint8_t virtwall = (0b10000000 >> PATH_RotationFactor) & VWALLS;
+  Map[ord.x][ord.y] |= virtwall;
 }
 
 void PATH_UpdateOrient(uint8_t num90Turns, TDIRECTION dir){
@@ -149,28 +159,33 @@ void PATH_UpdateOrient(uint8_t num90Turns, TDIRECTION dir){
  *  @return 8-bit number - Normalised info about the box.
  */
 uint8_t getNormalisedBoxVal(uint8_t x, uint8_t y){
-  /* We only want to normalise the values in the map boxes that correspond to the
+  /* We want to normalise the values in the map boxes that correspond to the
    * 4 walls. To 'normalise' this value, we must bit shift the box values by the
    * amount of times the robot has rotated in the system.
    *
    * As long as the RotationFactor is either (0, 1, 2, 3) this algorithm will work.
    *
    * Example:
-   *  - Consider we have box value = 1001 0000, with RotationFactor = 3
-   *  - After normalisation, the box value = 1100 0000
+   *  - Consider we have box value = 1001 1001, with RotationFactor = 3
+   *  - After normalisation, the box value = 1100 1100
    *
    * We will use this example box value and RotationFactor
    * to illustrate the algorithm.
    */
   uint8_t temp;
-  uint8_t info = (Map[x][y] & INFO_MASK);
-  uint8_t boxval = (Map[x][y] & WALL_MASK) >> 4; //Eg: bv = 0000 1001
+  uint8_t pwalls = (Map[x][y] & PWALLS);      //Eg. pwalls = 0000 1001
+  uint8_t vwalls = (Map[x][y] & VWALLS) >> 4; //Eg: vwalls = 0000 1001
 
-  boxval = boxval << PATH_RotationFactor;    //Eg. bv = 0100 1000
-  temp = boxval << 4;                   //Eg. temp = 1000 0000
-  boxval = (temp | boxval) & WALL_MASK; //Eg. ((1000 0000) | (0100 1000)) & WALL_MASK) 
-                                        //    = (1100 0000) Normalised box value!
-  return (boxval | info);
+  vwalls = vwalls << PATH_RotationFactor;  //Eg. vwalls = 0100 1000
+  temp = vwalls << 4;                      //Eg. temp = 1000 0000
+  vwalls = (temp | vwalls) & VWALLS;       //Eg. ((1000 0000) | (0100 1000)) & WALL_MASK)
+                                           //    = (1100 0000) Normalised box value!
+  //Do the same for pwalls
+  pwalls = pwalls << PATH_RotationFactor; //Eg. pwalls = 0100 1000
+  temp = pwalls >> 4;                     //Eg. temp = 0000 01000
+  pwalls = (temp | pwalls) & PWALLS;      //Eg. pwalls = 0000 1100
+
+  return (vwalls | pwalls);               // return = 1100 1100
 }
 
 /*! @brief Finds and returns the highest 'flood' number in an accessible
@@ -185,7 +200,7 @@ int8_t highestNeighbourCell(uint8_t x, uint8_t y){
   int8_t highestVal = -1;
   int8_t valAtNext;
 
-  if(!(Map[x][y] & F_MASK)){ //If there is not a wall in front of us on map
+  if(!(Map[x][y] & FRONT)){ //If there is not a wall in front of us on map
     valAtNext = PATH_Path[(x-1)][y];
     //If the value of that next box to the front of us has a value thats
     //greater than the biggest seen so far, then set it.
@@ -193,19 +208,19 @@ int8_t highestNeighbourCell(uint8_t x, uint8_t y){
       highestVal = valAtNext;
   }
 
-  if(!(Map[x][y] & L_MASK)){
+  if(!(Map[x][y] & LEFT)){
     valAtNext = PATH_Path[x][(y-1)];
     if(valAtNext > highestVal)
       highestVal = valAtNext;
   }
 
-  if(!(Map[x][y] & R_MASK)){
+  if(!(Map[x][y] & RIGHT)){
     valAtNext = PATH_Path[x][(y+1)];
     if(valAtNext > highestVal)
       highestVal = valAtNext;
   }
 
-  if(!(Map[x][y] & B_MASK)){
+  if(!(Map[x][y] & BACK)){
     valAtNext = PATH_Path[(x+1)][y];
     if(valAtNext > highestVal)
       highestVal = valAtNext;

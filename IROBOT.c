@@ -46,7 +46,8 @@ bool moveForwardFrom(TORDINATE ord, TSENSORS * sens);
 void updatePos(TORDINATE *ord);
 void findNextSquare(TORDINATE currOrd);
 int16_t getNextVal(TORDINATE currOrd);
-bool victimCheck(TORDINATE vic1, TORDINATE vic2, TORDINATE curr);
+bool areAllVictimsFound(TORDINATE curr);
+bool victimFound(void);
 /* End Private function prototypes */
 
 bool IROBOT_Init(void){
@@ -62,86 +63,48 @@ void IROBOT_Start(void){
 
 //TODO: Must remove - test routine, used for testing specific bits of code.
 void IROBOT_Test(void){
-  MOVE_Rotate(210, 90, DIR_CW);
   playSong(0);
 }
 
 void IROBOT_MazeRun(void){
-  bool vic1Found = false; bool vic2Found = false; bool sensTrig = false;
-  bool done = false;
-  TSENSORS sens;
-  TORDINATE home, currOrd, wayP1, wayP2, wayP3, wayP4, vic1, vic2;
+  bool bothVicsFound = false; bool sensTrig = false;
+  TSENSORS sens; uint8_t i = 0;
   /* Initialise waypoints */
-  home.x = 1; home.y = 3; //It is assumed that the robots start position is always (1,3)
-  currOrd.x = 1; currOrd.y = 3;
-  wayP1.x = 2; wayP1.y = 3;
-  wayP2.x = 3; wayP2.y = 3;
-  wayP3.x = 3; wayP3.y = 1;
-  wayP4.x = 0; wayP4.y = 0;
-  vic1.x = 6; vic1.y = 6;
-  vic2.x = 6; vic2.y = 6;
-  
-  while(!(vic1Found && vic2Found) && !sensTrig)
-  {
-    PATH_Plan(currOrd, wayP1);
-    while(!done)
+  TORDINATE home = {1, 3};
+  TORDINATE currOrd = {1, 3};
+  TORDINATE wayP1 = {2, 3};
+  TORDINATE wayP2 = {3, 3};
+  TORDINATE wayP3 = {3, 1};
+  TORDINATE wayP4 = {0, 0};
+  /* Iniitialise the list of waypoints */
+  TORDINATE wayList[4];
+  wayList[0] = wayP1; wayList[1] = wayP2; wayList[2] = wayP3; wayList[3] = wayP4;
+
+  while(!bothVicsFound && !sensTrig){
+    //Loop through WayPoint List and continue to move around the maze, until
+    //both victims are found
+    PATH_Plan(currOrd, wayList[i]);
+    
+    while(!(currOrd.x == wayList[i].x && currOrd.y == wayList[i].y)) //While we havent gotten to the waypoint
     {
-      LCD_PrintStr("WP1", BM_LEFT);
-      victimCheck(vic1, vic2, currOrd);
+      bothVicsFound = areAllVictimsFound(currOrd); //Check square for victims and determine if all have been found
+      if(bothVicsFound)
+        break; //Break inner while loop and go home
       findNextSquare(currOrd);
       moveForwardFrom(currOrd, &sens);
       updatePos(&currOrd);
-      
-      done = ((currOrd.x == wayP1.x) && (currOrd.y == wayP1.y));
     }
-    done = false;
-    PATH_Plan(currOrd, wayP2);
-    while(!done)
-    {
-      LCD_PrintStr("WP2", BM_LEFT);
-      victimCheck(vic1, vic2, currOrd);
-      findNextSquare(currOrd);
-      moveForwardFrom(currOrd, &sens);
-      updatePos(&currOrd);
-      
-      done = ((currOrd.x == wayP2.x) && (currOrd.y == wayP2.y));
-    }
-    done = false;
-    PATH_Plan(currOrd, wayP3);
-    while(!done)
-    {
-      LCD_PrintStr("WP3", BM_LEFT);
-      victimCheck(vic1, vic2, currOrd);
-      findNextSquare(currOrd);
-      moveForwardFrom(currOrd, &sens);
-      updatePos(&currOrd);
-      
-      done = ((currOrd.x == wayP3.x) && (currOrd.y == wayP3.y));
-    }
-    done = false;
-    PATH_Plan(currOrd, wayP4);
-    while(!done)
-    {
-      LCD_PrintStr("WP4", BM_LEFT);
-      victimCheck(vic1, vic2, currOrd);
-      findNextSquare(currOrd);
-      moveForwardFrom(currOrd, &sens);
-      updatePos(&currOrd);
-      
-      done = ((currOrd.x == wayP4.x) && (currOrd.y == wayP4.y));
-    }
-    done = false;
+
+    i = (i + 1) % 4; //Make sure to move within the waypoint list
   }
-  done = false;
+
+  //We have found both victims, time to go home!
   PATH_Plan(currOrd, home);
-  while(!done)
+  while(!(currOrd.x == home.x && currOrd.y == home.y)) //While we havent gotten to the waypoint
   {
-    LCD_PrintStr("Home", BM_LEFT);
     findNextSquare(currOrd);
     moveForwardFrom(currOrd, &sens);
     updatePos(&currOrd);
-
-    done = ((currOrd.x == home.x) && (currOrd.y == home.y));
   }
 }
 
@@ -359,6 +322,7 @@ void findNextSquare(TORDINATE currOrd){
   bool rightLowest = false;
   bool leftLowest = false;
   bool behindLowest = false;
+  TSENSORS sens;
   int16_t lowestSoFar = PATH_Path[currOrd.x][currOrd.y];
   int16_t temp;
   
@@ -409,13 +373,13 @@ void findNextSquare(TORDINATE currOrd){
   if(frontLowest){
     //Do Nothing to rotate
   } else if (leftLowest){
-    MOVE_Rotate(DRIVE_ROTATE_SPEED, 87, DIR_CCW);
+    MOVE_Rotate(DRIVE_ROTATE_SPEED, 87, DIR_CCW, &sens);
     PATH_UpdateOrient(1, DIR_CCW);
   } else if (rightLowest){
-    MOVE_Rotate(DRIVE_ROTATE_SPEED, 87, DIR_CW);
+    MOVE_Rotate(DRIVE_ROTATE_SPEED, 87, DIR_CW, &sens);
     PATH_UpdateOrient(1, DIR_CW);
   } else if (behindLowest){
-    MOVE_Rotate(DRIVE_ROTATE_SPEED, 180, DIR_CCW);
+    MOVE_Rotate(DRIVE_ROTATE_SPEED, 180, DIR_CCW, &sens);
     PATH_UpdateOrient(2, DIR_CCW);
   }
   
@@ -427,34 +391,55 @@ void findNextSquare(TORDINATE currOrd){
  */
 void updatePos(TORDINATE *ord){
   switch(PATH_RotationFactor){
-      case 0:
-        ord->x = ord->x - 1; break;
-      case 1:
-        ord->y = ord->y + 1; break;
-      case 2:
-        ord->x = ord->x + 1; break;
-      case 3:
-        ord->y = ord->y - 1; break;
-    }
+    case 0:
+      ord->x = ord->x - 1; break;
+    case 1:
+      ord->y = ord->y + 1; break;
+    case 2:
+      ord->x = ord->x + 1; break;
+    case 3:
+      ord->y = ord->y - 1; break;
+  }
 }
 
-bool victimCheck(TORDINATE vic1, TORDINATE vic2, TORDINATE curr){
-  bool bothVicsFound = false;
+/*! @brief Attempts to find a victim at the robots current position.
+ *
+ *  @return TRUE - If a victim was found
+ */
+bool victimFound(void){
   uint8_t rxdata;
-          
-  USART_OutChar(OP_SENSORS);
+  USART_OutChar(OP_SENSORS);  //Grab data about P17: Infrared data
   USART_OutChar(OP_SENS_IR);
   rxdata = USART_InChar();
   
-  if(rxdata == 254 || rxdata == 242 || rxdata == 250 || rxdata == 256){
-    if(vic1.x == 6 && vic1.y == 6){
-      vic1.x = curr.x; vic1.y = curr.y;
-      playSong(0);
-    }
-    else if((vic2.x == 6 && vic2.y == 6) && !(vic1.x == curr.x && vic1.y == curr.y)){
-      vic2.x = curr.x; vic2.y = curr.y;
-      playSong(2);
-      bothVicsFound = true;
+  return (rxdata == 250 || rxdata == 246 || rxdata == 254);
+}
+
+/*! @brief Determines if all victims have been found, if not - it will perform
+ *  a scan at the robots current location.
+ *
+ *  @param curr - The current position of the robot
+ *  @return TRUE - If both victims were found.
+ */
+bool areAllVictimsFound(TORDINATE curr){
+  //Set initial victim locations to a unreasonable location, to indacte not found
+  static TORDINATE vic1 = {255, 255};
+  static TORDINATE vic2 = {255, 255};
+  static bool bothVicsFound = false;
+
+  if(!bothVicsFound){ //First of all, make sure that all victims havent already been found
+    if(victimFound()){ //A victim was found
+      if(vic1.x == 255){ //If victim 1 has yet to be found
+        vic1.x = curr.x; vic1.y = curr.y; //Set vics location to our position
+        playSong(0);
+      } else {
+        if(!(curr.x == vic1.x && curr.y == vic1.y)) //If the current location isnt victim 1
+        {
+          vic2.x = curr.x; vic2.y = curr.y; //Victim 2 was found!!
+          playSong(1);
+          bothVicsFound = true;
+        }
+      }
     }
   }
   
