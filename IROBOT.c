@@ -189,29 +189,30 @@ bool IROBOT_WallFollow(TDIRECTION irDir, int16_t moveDist){
  *  @note Assumes the robot has already been orientated to move into the next 
  *        grid location.
  */
-  bool moveForwardFrom(TORDINATE ord, TSENSORS * sens){
+bool moveForwardFrom(TORDINATE ord, TSENSORS * sens){
   bool triggered = false;
   bool LWallF, RWallF, LHWallF, RHWallF, FInNext;
   double ir, dist;
   int blind_driveForwardDist = 430;  //original 480
   int wall_driveForwardDist = 500;
-  TORDINATE nextOrd;
-  nextOrd.x = ord.x;
-  nextOrd.y = ord.y;
+  TORDINATE nextOrd = ord;
+  
   //Calculates the next grid position based on what way the robot is facing
   updatePos(&nextOrd);
   //Get case information, to decide how to move forward
-  LWallF  = PATH_GetMapInfo(ord, BOX_Left) && PATH_GetMapInfo(nextOrd, BOX_Left);
-  RWallF  = PATH_GetMapInfo(ord, BOX_Right) && PATH_GetMapInfo(nextOrd, BOX_Right);
-  LHWallF = !PATH_GetMapInfo(ord, BOX_Left) && PATH_GetMapInfo(nextOrd, BOX_Left);
-  RHWallF = !PATH_GetMapInfo(ord, BOX_Right) && PATH_GetMapInfo(nextOrd, BOX_Right);  
-  FInNext = PATH_GetMapInfo(nextOrd, BOX_Front);
+  LWallF  = PATH_GetMapInfo(ord, BOX_PLeft) && PATH_GetMapInfo(nextOrd, BOX_PLeft);
+  RWallF  = PATH_GetMapInfo(ord, BOX_PRight) && PATH_GetMapInfo(nextOrd, BOX_PRight);
+  LHWallF = !PATH_GetMapInfo(ord, BOX_PLeft) && PATH_GetMapInfo(nextOrd, BOX_PLeft);
+  RHWallF = !PATH_GetMapInfo(ord, BOX_PRight) && PATH_GetMapInfo(nextOrd, BOX_PRight);  
+  FInNext = PATH_GetMapInfo(nextOrd, BOX_PFront);
+  
   if(LWallF || RWallF) //If we can follow a wall on the left/right for 1m
   {
     if(LWallF)
       triggered = IROBOT_WallFollow(DIR_CCW, wall_driveForwardDist);
     else
       triggered = IROBOT_WallFollow(DIR_CW, wall_driveForwardDist);
+    
     if(FInNext && !triggered)
     {
       //If the next cube has a wall in front of us, make sure we don't hit it.

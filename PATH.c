@@ -93,31 +93,23 @@ uint8_t PATH_GetMapInfo(TORDINATE boxOrd, TBOX_INFO info){
     switch(info)
     {
       case BOX_Front:
-        box = (temp & FRONT);
-        break;
+        box = (temp & FRONT);   break;
       case BOX_Right:
-        box = (temp & RIGHT);
-        break;
+        box = (temp & RIGHT);   break;
       case BOX_Back:
-        box = (temp & BACK);
-        break;
+        box = (temp & BACK);    break;
       case BOX_Left:
-        box = (temp & LEFT);
-        break;
+        box = (temp & LEFT);    break;
       case BOX_PFront:
-        box = (temp & P_FRONT);
-        break;
+        box = (temp & P_FRONT); break;
       case BOX_PRight:
-        box = (temp & P_RIGHT);
-        break;
+        box = (temp & P_RIGHT); break;
       case BOX_PBack:
-        box = (temp & P_BACK);
-        break;
+        box = (temp & P_BACK);  break;
       case BOX_PLeft:
-        box = (temp & P_LEFT);
+        box = (temp & P_LEFT);  break;
       case BOX_All:
-        box = temp;
-        break;
+        box = temp;             break;
     }
   }
   
