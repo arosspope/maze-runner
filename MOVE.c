@@ -104,7 +104,6 @@ void MOVE_DirectDrive(int16_t leftWheelVel, int16_t rightWheelVel){
 }
 
 bool MOVE_CheckSensor(TSENSORS * sensors){
-  uint8_t data;
   sensors->bump = false; sensors->wall = false;
 
   //Tell the Robot to send back information regarding a group of sensors
