@@ -45,7 +45,7 @@ static void loadSongs(void);
 static void playSong(uint8_t songNo);
 bool moveForwardFrom(TORDINATE ord, TSENSORS * sens, int16_t * movBack);
 void updatePos(TORDINATE *ord);
-void findNextSquare(TORDINATE currOrd);
+bool findNextSquare(TORDINATE currOrd, bool doRotate);
 int16_t getNextPathVal(TORDINATE currOrd);
 bool areAllVictimsFound(TORDINATE curr);
 bool victimFound(void);
@@ -100,14 +100,14 @@ void IROBOT_MazeRun(void){
     
     while(!(currOrd.x == wayList[i].x && currOrd.y == wayList[i].y)) //While we havent gotten to the current waypoint
     {
-      if(PATH_Path[wayList[i].x][wayList[i].x] == -1) //Check that a path to the waypoint is reachable
+      if(!findNextSquare(wayList[i], false)) //Check that the waypoint is reachable
         break;  //If not, break and calculate Path to next waypoint
 
       bothVicsFound = areAllVictimsFound(currOrd);    //Check square for victims and determine if all have been found
       if(bothVicsFound)
         break; //Break inner while loop and go home
       
-      findNextSquare(currOrd);                      //Find next sqaure to move to, and rotate robot to face
+      findNextSquare(currOrd, true);                //Find next sqaure to move to, and rotate robot to face
       if(moveForwardFrom(currOrd, &sens, &movBack)) //If a Sensor was triggered
       {
         errorHandle(currOrd, wayList[i], sens, movBack);
@@ -124,7 +124,7 @@ void IROBOT_MazeRun(void){
   PATH_Plan(currOrd, home); movBack = 0;
   while(!(currOrd.x == home.x && currOrd.y == home.y)) //While we havent gotten to the waypoint
   {
-    findNextSquare(currOrd);
+    findNextSquare(currOrd, true);
     if(moveForwardFrom(currOrd, &sens, &movBack)){
       errorHandle(currOrd, home, sens, movBack);
     } else {
@@ -358,8 +358,10 @@ int16_t getNextPathVal(TORDINATE currOrd){
  *         the robot to face that square.
  * 
  *  @param currOrd - The box to move from
+ *  @param doRotate - Indiactes whether or not we want the robot to rotate to face the next lowest sqaure
+ *  @return TRUE - If it could find a lower square on the path
  */
-void findNextSquare(TORDINATE currOrd){
+bool findNextSquare(TORDINATE currOrd, bool doRotate){
   uint8_t lowestWall = 0; /* Indicates where the lowest wall was found */
   int16_t lowestSoFar = PATH_Path[currOrd.x][currOrd.y];
   TSENSORS sens;
@@ -369,7 +371,7 @@ void findNextSquare(TORDINATE currOrd){
   if(!PATH_GetMapInfo(currOrd, BOX_Front)){
     temp = getNextPathVal(currOrd);       //Get the flood fill value at that square
     if(temp < lowestSoFar && temp != -1){ //If its the lowest seen so far
-      lowestWall = 0;     //Lowest wall at case 0 (in Front)
+      lowestWall = 1;     //Lowest wall at case 1 (in Front)
       lowestSoFar = temp;
     }
   }
@@ -378,7 +380,7 @@ void findNextSquare(TORDINATE currOrd){
     PATH_UpdateOrient(1, DIR_CCW); //Virtually turn the robot (so its facing left)
     temp = getNextPathVal(currOrd);
     if(temp < lowestSoFar && temp != -1){
-      lowestWall = 1;     //Lowest wall at case 1 (Left)
+      lowestWall = 2;     //Lowest wall at case 2 (Left)
       lowestSoFar = temp;
     }
     PATH_UpdateOrient(1, DIR_CW); //Virtually reset the robot
@@ -388,7 +390,7 @@ void findNextSquare(TORDINATE currOrd){
     PATH_UpdateOrient(1, DIR_CW); //Virtually turn the robot
     temp = getNextPathVal(currOrd);
     if(temp < lowestSoFar && temp != -1){
-      lowestWall = 2;     //Lowest wall at case 2 (Right)
+      lowestWall = 3;     //Lowest wall at case 3 (Right)
       lowestSoFar = temp;
     }
     PATH_UpdateOrient(1, DIR_CCW); //Virtually reset the robot
@@ -398,29 +400,36 @@ void findNextSquare(TORDINATE currOrd){
     PATH_UpdateOrient(2, DIR_CCW); //Virtually turn the robot
     temp = getNextPathVal(currOrd);
     if(temp < lowestSoFar && temp != -1){
-      lowestWall = 3;     //Lowest wall at case 3 (Back)
+      lowestWall = 4;     //Lowest wall at case 4 (Back)
       lowestSoFar = temp;
     }
     PATH_UpdateOrient(2, DIR_CW); //Virtually reset the robot
   }
 
-  switch(lowestWall){
-    case 0:
-      //Wall in Front don't need to turn
-      break;
-    case 1:
-      MOVE_Rotate(DRIVE_ROTATE_SPEED, (90 - ANGLE_ER), DIR_CCW, &sens); //Left
-      PATH_UpdateOrient(1, DIR_CCW);
-      break;
-    case 2:
-      MOVE_Rotate(DRIVE_ROTATE_SPEED, (90 - ANGLE_ER), DIR_CW, &sens); //Right
-      PATH_UpdateOrient(1, DIR_CW);
-      break;
-    case 3:
-      MOVE_Rotate(DRIVE_ROTATE_SPEED, 180, DIR_CCW, &sens); //Back
-      PATH_UpdateOrient(2, DIR_CCW);
-      break;
+  if(doRotate){
+    switch(lowestWall){
+      case 1:
+        //Wall in Front don't need to turn
+        break;
+      case 2:
+        MOVE_Rotate(DRIVE_ROTATE_SPEED, (90 - ANGLE_ER), DIR_CCW, &sens); //Left
+        PATH_UpdateOrient(1, DIR_CCW);
+        break;
+      case 3:
+        MOVE_Rotate(DRIVE_ROTATE_SPEED, (90 - ANGLE_ER), DIR_CW, &sens); //Right
+        PATH_UpdateOrient(1, DIR_CW);
+        break;
+      case 4:
+        MOVE_Rotate(DRIVE_ROTATE_SPEED, 180, DIR_CCW, &sens); //Back
+        PATH_UpdateOrient(2, DIR_CCW);
+        break;
+      default:
+        //We did not find a lower wall - the path we are on has failed
+        break;
+    }
   }
+
+  return (lowestWall > 0);
 }
 
 /*! @brief Resets the position of the IR sensor back to 0 (forward facing).
