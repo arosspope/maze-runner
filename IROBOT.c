@@ -67,13 +67,15 @@ void IROBOT_Test(void){
   playSong(0);
 }
 
-void errorHandle(TORDINATE ord, TSENSORS sensor, int16_t movBack){
+void errorHandle(TORDINATE ord, TORDINATE wayP, TSENSORS sensor, int16_t movBack){
   if(sensor.bump){
     MOVE_Straight(-350, movBack, false, 0, 0);
   }
   
   if(sensor.wall){
-    
+    MOVE_Straight(-350, movBack, false, 0, 0);
+    PATH_VirtWallFoundAt(ord);
+    PATH_Plan(ord, wayP);
   }
 }
 
@@ -105,7 +107,7 @@ void IROBOT_MazeRun(void){
       findNextSquare(currOrd);            //Find next sqaure to move to, and rotate robot to face
       if(moveForwardFrom(currOrd, &sens, &movBack)) //If a Sensor was triggered
       {
-        errorHandle(currOrd, sens, movBack);
+        errorHandle(currOrd, wayList[i], sens, movBack);
       } else {
         updatePos(&currOrd); //Everything was fine, update position
       }
@@ -121,7 +123,7 @@ void IROBOT_MazeRun(void){
   {
     findNextSquare(currOrd);
     if(moveForwardFrom(currOrd, &sens, &movBack)){
-      errorHandle(currOrd, sens, movBack);
+      errorHandle(currOrd, home, sens, movBack);
     } else {
       updatePos(&currOrd);
     }
