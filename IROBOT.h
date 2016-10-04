@@ -39,7 +39,7 @@ void IROBOT_Start(void);
  * 
  *  @return bool - TRUE if interrupted by sensor
  */
-bool IROBOT_WallFollow(TDIRECTION irDir, TSENSORS * sens, int16_t moveDist);
+bool IROBOT_WallFollow(TDIRECTION irDir, TSENSORS * sens, int16_t moveDist, int16_t * movBack);
 
 //TODO: Must remove
 void IROBOT_Test(void);
