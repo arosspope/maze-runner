@@ -16,6 +16,7 @@ extern "C" {
 #endif
 
 #include "types.h"
+#include "MOVE.h"
 
 /*! @brief Sets up the iRobot before first use.
  *
@@ -38,7 +39,7 @@ void IROBOT_Start(void);
  * 
  *  @return bool - TRUE if interrupted by sensor
  */
-bool IROBOT_WallFollow(TDIRECTION irDir, int16_t moveDist);
+bool IROBOT_WallFollow(TDIRECTION irDir, TSENSORS * sens, int16_t moveDist);
 
 //TODO: Must remove
 void IROBOT_Test(void);

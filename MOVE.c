@@ -9,6 +9,7 @@
  *  @date 02-09-2016
  */
 #include "USART.h"
+#include "LCD.h"
 #include "OPCODES.h"
 #include "MOVE.h"
 
@@ -26,7 +27,7 @@ int16_t MOVE_GetDistMoved(void){
   return (int16_t) rxdata.l;
 }
 
-bool MOVE_Straight(int16_t velocity, uint16_t distance, TSENSORS * sens){
+bool MOVE_Straight(int16_t velocity, int16_t distance, TSENSORS * sens){
   int16_t distanceTravelled = 0;
   bool sensorTrig = false;
 
@@ -39,9 +40,9 @@ bool MOVE_Straight(int16_t velocity, uint16_t distance, TSENSORS * sens){
     if(velocity >= 0){
       distanceTravelled += MOVE_GetDistMoved(); //Positive velocity returns positive distance
     } else {
-      distanceTravelled += (MOVE_GetDistMoved() * -1); //Negative vel returns neg dist (must normalise)
+      distanceTravelled += ((int16_t) MOVE_GetDistMoved() * -1); //Negative vel returns neg dist (must normalise)
     }
-
+    
     sensorTrig = MOVE_CheckSensor(sens);
   }
 
@@ -113,6 +114,6 @@ bool MOVE_CheckSensor(TSENSORS * sensors){
   
   //2. Packet ID: 8 (Wall)
   //  sensStatus->sensBits.wall = USART_InChar();
-  USART_InChar();
+  sensors->wall = USART_InChar();
   return (sensors->bump || sensors->wall);
 }
