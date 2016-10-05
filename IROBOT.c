@@ -33,7 +33,7 @@ __EEPROM_DATA(9, 10, 11, 12, 13, 14, 15, 16);
 /* Loading Map data to EEPROM; ADDR offset 0x40 - TODO: Must do */
 
 //Optimal speeds for driving the iROBOT
-#define DRIVE_TOP_SPEED   400  //ORIG 500
+#define DRIVE_TOP_SPEED   450  //ORIG 500
 #define BLIND_TOP_SPEED   300  //original 200 
 #define DRIVE_TURN_SPEED  330  //CHANGING IT TO 300 MADE IT UNDERSHOOT 
 #define DRIVE_ROTATE_SPEED 210
@@ -70,14 +70,15 @@ void IROBOT_Test(void){
 bool errorHandle(TORDINATE ord, TORDINATE wayP, TSENSORS sensor, int16_t movBack){
   bool rc = true;
   if(sensor.bump){
-    MOVE_Straight(-350, movBack, false, 0, 0);
+    MOVE_Straight(-180, movBack, false, 0, 0);
   }
   
   if(sensor.wall){
-    MOVE_Straight(-350, movBack, false, 0, 0);
+    MOVE_Straight(-180, movBack, false, 0, 0);
     PATH_VirtWallFoundAt(ord);
     rc = PATH_Plan(ord, wayP);
   }
+  LCD_PrintInt(movBack, TOP_LEFT);
   
   return rc;
 }
@@ -242,12 +243,12 @@ bool moveForwardFrom(TORDINATE ord, TSENSORS * sens, int16_t * movBack){
         MOVE_DirectDrive(0,0); //Stop the robot
         
         if(triggered)
-          *movBack += 500 + dist; //Calculate dist required to move Back
+          *movBack += dist; //Calculate dist required to move Back
       }
     }
     else if(BWall && !triggered){ //Do a Backwall follow
       resetIRPos(); SM_Move(100, DIR_CW); ir = IR_Measure(); //Face the IR backward and get reading
-      temp = (int16_t)ir; dist = 0;
+      temp = (int16_t)ir; dist = 0; MOVE_GetDistMoved();
       MOVE_DirectDrive(BLIND_TOP_SPEED, BLIND_TOP_SPEED);
       while((ir < 900) && !triggered)  //Drive straight until we are 0.5m from the wall
       {
@@ -277,7 +278,7 @@ bool moveForwardFrom(TORDINATE ord, TSENSORS * sens, int16_t * movBack){
     //If there's not a wall to the left/right of us in this box, but there is one in the next
     if(BWall && !triggered){ //If we can back wall follow
       resetIRPos(); SM_Move(100, DIR_CW); ir = IR_Measure(); //Face the IR forward and get reading
-      temp = (int16_t)ir; dist = 0;
+      temp = (int16_t)ir; dist = 0; MOVE_GetDistMoved();
       MOVE_DirectDrive(BLIND_TOP_SPEED,BLIND_TOP_SPEED);
       while((ir < 900) && !triggered)  //Drive straight until we are 0.5m from the wall
       {
@@ -290,10 +291,11 @@ bool moveForwardFrom(TORDINATE ord, TSENSORS * sens, int16_t * movBack){
       if(triggered)
         *movBack += dist; //Calculate dist required to move Back
     }
+    dist = 0;
     
     if(FInNext && !triggered){
       resetIRPos(); ir = IR_Measure(); //Face the IR forward and get reading
-      MOVE_DirectDrive(BLIND_TOP_SPEED,BLIND_TOP_SPEED); dist = 0;
+      MOVE_DirectDrive(BLIND_TOP_SPEED,BLIND_TOP_SPEED); dist = 0; MOVE_GetDistMoved();
       while((ir > 500) && !triggered)  //Drive straight until we are 0.5m from the wall
       {
         triggered = MOVE_CheckSensor(sens);
@@ -302,13 +304,11 @@ bool moveForwardFrom(TORDINATE ord, TSENSORS * sens, int16_t * movBack){
       }
       MOVE_DirectDrive(0,0); //Stop the robot
       
-      if(triggered && BWall)
-        *movBack += 900 + dist; //Calculate dist required to move Back
-      else if(triggered && !BWall){
+      if(triggered){
         *movBack += dist;
-        LCD_PrintInt(*movBack, TOP_LEFT);
+        if(BWall)
+          *movBack += 900;
       }
-      
     } else if (!FInNext && !triggered){
       if(LHWallF && !triggered)
         triggered = IROBOT_WallFollow(DIR_CCW, sens, 600, movBack);
@@ -322,7 +322,7 @@ bool moveForwardFrom(TORDINATE ord, TSENSORS * sens, int16_t * movBack){
     if(FInNext && !triggered) //Wall in front for us to follow?
     {
       resetIRPos(); ir = IR_Measure(); dist = 0;//Face the IR forward and get reading
-      MOVE_DirectDrive(BLIND_TOP_SPEED,BLIND_TOP_SPEED);
+      MOVE_DirectDrive(BLIND_TOP_SPEED,BLIND_TOP_SPEED); MOVE_GetDistMoved();
       while((ir > 500) && !triggered)  //Drive straight until we are 0.5m from the wall
       {
         triggered = MOVE_CheckSensor(sens);
@@ -332,7 +332,7 @@ bool moveForwardFrom(TORDINATE ord, TSENSORS * sens, int16_t * movBack){
       MOVE_DirectDrive(0,0); //Stop the robot
       
       if(triggered)
-        *movBack += 500 + dist; //Calculate dist required to move Back
+        *movBack += dist + 20; //Calculate dist required to move Back
     }
     else if(!FInNext && !triggered)
     {
@@ -484,7 +484,7 @@ bool victimFound(void){
   rxdata = USART_InChar();
   
   //return (rxdata == 250 || rxdata == 246 || rxdata == 254);
-  LCD_PrintInt((int)rxdata, TOP_LEFT);
+  //LCD_PrintInt((int)rxdata, TOP_LEFT);
   return (rxdata == 250 || rxdata == 246 || rxdata == 254);
 }
 

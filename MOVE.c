@@ -82,8 +82,7 @@ bool MOVE_Rotate(uint16_t velocity, uint16_t angle, TDIRECTION dir, TSENSORS * s
     }else{
       angleMoved += ((int16_t) rxdata.l * -1); //CW direction returns negative angles
     }
-
-    sensorTrig = MOVE_CheckSensor(sens);
+    MOVE_CheckSensor(sens);
   }
 
   MOVE_DirectDrive(0, 0); //Tell the IROBOT to stop rotating
