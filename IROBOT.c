@@ -67,7 +67,8 @@ void IROBOT_Test(void){
   playSong(0);
 }
 
-void errorHandle(TORDINATE ord, TORDINATE wayP, TSENSORS sensor, int16_t movBack){
+bool errorHandle(TORDINATE ord, TORDINATE wayP, TSENSORS sensor, int16_t movBack){
+  bool rc = true;
   if(sensor.bump){
     MOVE_Straight(-350, movBack, false, 0, 0);
   }
@@ -75,8 +76,10 @@ void errorHandle(TORDINATE ord, TORDINATE wayP, TSENSORS sensor, int16_t movBack
   if(sensor.wall){
     MOVE_Straight(-350, movBack, false, 0, 0);
     PATH_VirtWallFoundAt(ord);
-    PATH_Plan(ord, wayP);
+    rc = PATH_Plan(ord, wayP);
   }
+  
+  return rc;
 }
 
 void IROBOT_MazeRun(void){
@@ -96,27 +99,25 @@ void IROBOT_MazeRun(void){
   while(!bothVicsFound && !sensTrig){
     //Loop through WayPoint List and continue to move around the maze, until
     //both victims are found
-    PATH_Plan(currOrd, wayList[i]);
-    
-    while(!(currOrd.x == wayList[i].x && currOrd.y == wayList[i].y)) //While we havent gotten to the current waypoint
+    if(PATH_Plan(currOrd, wayList[i])) //If a path can be found
     {
-      if(!findNextSquare(wayList[i], false)) //Check that the waypoint is reachable
-        break;  //If not, break and calculate Path to next waypoint
-
-      bothVicsFound = areAllVictimsFound(currOrd);    //Check square for victims and determine if all have been found
-      if(bothVicsFound)
-        break; //Break inner while loop and go home
-      
-      findNextSquare(currOrd, true);                //Find next sqaure to move to, and rotate robot to face
-      if(moveForwardFrom(currOrd, &sens, &movBack)) //If a Sensor was triggered
+      while(!(currOrd.x == wayList[i].x && currOrd.y == wayList[i].y)) //While we havent gotten to the current waypoint
       {
-        errorHandle(currOrd, wayList[i], sens, movBack);
-      } else {
-        updatePos(&currOrd); //Everything was fine, update position
-      }
-      movBack = 0;
-    }
+        bothVicsFound = areAllVictimsFound(currOrd);    //Check square for victims and determine if all have been found
+        if(bothVicsFound)
+          break; //Break inner while loop and go home
 
+        findNextSquare(currOrd, true);                //Find next sqaure to move to, and rotate robot to face
+        if(moveForwardFrom(currOrd, &sens, &movBack)) //If a Sensor was triggered
+        {
+          if(!errorHandle(currOrd, wayList[i], sens, movBack))
+            break; //If we cant calculate a path waypoint; break and go to the next waypoint
+        } else {
+          updatePos(&currOrd); //Everything was fine, update position
+        }
+        movBack = 0;
+      }
+    }
     i = (i + 1) % 4; //Make sure to move within the waypoint list
   }
 
@@ -205,7 +206,7 @@ bool IROBOT_WallFollow(TDIRECTION irDir, TSENSORS * sens, int16_t moveDist, int1
  *        grid location.
  */
 bool moveForwardFrom(TORDINATE ord, TSENSORS * sens, int16_t * movBack){
-  bool triggered = false; double ir; int temp;
+  bool triggered = false; double ir; int temp; int dist = 0;
   bool LWallF, RWallF, LHWallF, RHWallF, FInNext, BWall;
   TORDINATE nextOrd = ord;
   
@@ -230,32 +231,34 @@ bool moveForwardFrom(TORDINATE ord, TSENSORS * sens, int16_t * movBack){
       
       if(!triggered) //Then do a front wall follow until within 500mm
       {
-        resetIRPos(); ir = IR_Measure(); //Face the IR forward and get reading
-        MOVE_DirectDrive(BLIND_TOP_SPEED, BLIND_TOP_SPEED);
+        resetIRPos(); ir = IR_Measure(); dist = 0; //Face the IR forward and get reading
+        MOVE_GetDistMoved(); MOVE_DirectDrive(BLIND_TOP_SPEED, BLIND_TOP_SPEED);
         while((ir > 500) && !triggered)  //Drive straight until we are 0.5m from the wall
         {
           triggered = MOVE_CheckSensor(sens);
+          dist += MOVE_GetDistMoved();
           ir = IR_Measure();
         }
         MOVE_DirectDrive(0,0); //Stop the robot
         
         if(triggered)
-          *movBack += 500 + (ir - 500); //Calculate dist required to move Back
+          *movBack += 500 + dist; //Calculate dist required to move Back
       }
     }
     else if(BWall && !triggered){ //Do a Backwall follow
       resetIRPos(); SM_Move(100, DIR_CW); ir = IR_Measure(); //Face the IR backward and get reading
-      temp = (int16_t)ir;
+      temp = (int16_t)ir; dist = 0;
       MOVE_DirectDrive(BLIND_TOP_SPEED, BLIND_TOP_SPEED);
       while((ir < 900) && !triggered)  //Drive straight until we are 0.5m from the wall
       {
         triggered = MOVE_CheckSensor(sens);
+        dist += MOVE_GetDistMoved();
         ir = IR_Measure();
       }
       MOVE_DirectDrive(0,0); //Stop the robot
       
       if(triggered)
-        *movBack += (ir - temp); //Calculate dist required to move Back
+        *movBack += dist; //Calculate dist required to move Back
       
       if(LWallF && !triggered)
         triggered = IROBOT_WallFollow(DIR_CCW, sens, 600, movBack);
@@ -274,31 +277,37 @@ bool moveForwardFrom(TORDINATE ord, TSENSORS * sens, int16_t * movBack){
     //If there's not a wall to the left/right of us in this box, but there is one in the next
     if(BWall && !triggered){ //If we can back wall follow
       resetIRPos(); SM_Move(100, DIR_CW); ir = IR_Measure(); //Face the IR forward and get reading
-      temp = (int16_t)ir;
+      temp = (int16_t)ir; dist = 0;
       MOVE_DirectDrive(BLIND_TOP_SPEED,BLIND_TOP_SPEED);
       while((ir < 900) && !triggered)  //Drive straight until we are 0.5m from the wall
       {
         triggered = MOVE_CheckSensor(sens);
+        dist += MOVE_GetDistMoved();
         ir = IR_Measure();
       }
       MOVE_DirectDrive(0,0); //Stop the robot
       
       if(triggered)
-        *movBack += (ir - temp); //Calculate dist required to move Back
+        *movBack += dist; //Calculate dist required to move Back
     }
     
     if(FInNext && !triggered){
       resetIRPos(); ir = IR_Measure(); //Face the IR forward and get reading
-      MOVE_DirectDrive(BLIND_TOP_SPEED,BLIND_TOP_SPEED);
+      MOVE_DirectDrive(BLIND_TOP_SPEED,BLIND_TOP_SPEED); dist = 0;
       while((ir > 500) && !triggered)  //Drive straight until we are 0.5m from the wall
       {
         triggered = MOVE_CheckSensor(sens);
+        dist += MOVE_GetDistMoved();
         ir = IR_Measure();
       }
       MOVE_DirectDrive(0,0); //Stop the robot
       
-      if(triggered)
-        *movBack += 900 + (ir - 500); //Calculate dist required to move Back
+      if(triggered && BWall)
+        *movBack += 900 + dist; //Calculate dist required to move Back
+      else if(triggered && !BWall){
+        *movBack += dist;
+        LCD_PrintInt(*movBack, TOP_LEFT);
+      }
       
     } else if (!FInNext && !triggered){
       if(LHWallF && !triggered)
@@ -312,17 +321,18 @@ bool moveForwardFrom(TORDINATE ord, TSENSORS * sens, int16_t * movBack){
     triggered = MOVE_Straight(BLIND_TOP_SPEED, 500, true, sens, movBack);
     if(FInNext && !triggered) //Wall in front for us to follow?
     {
-      resetIRPos(); ir = IR_Measure(); //Face the IR forward and get reading
+      resetIRPos(); ir = IR_Measure(); dist = 0;//Face the IR forward and get reading
       MOVE_DirectDrive(BLIND_TOP_SPEED,BLIND_TOP_SPEED);
       while((ir > 500) && !triggered)  //Drive straight until we are 0.5m from the wall
       {
         triggered = MOVE_CheckSensor(sens);
+        dist += MOVE_GetDistMoved();
         ir = IR_Measure();
       }
       MOVE_DirectDrive(0,0); //Stop the robot
       
       if(triggered)
-        *movBack += 500 + (ir - 500); //Calculate dist required to move Back
+        *movBack += 500 + dist; //Calculate dist required to move Back
     }
     else if(!FInNext && !triggered)
     {
