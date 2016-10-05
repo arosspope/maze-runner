@@ -122,7 +122,7 @@ void IROBOT_MazeRun(void){
         movBack = 0;
       }
     }
-    i = (i + 1) % 4; //Make sure to move within the waypoint list
+    i = (i + 1) % 6; //Make sure to move within the waypoint list
   }
 
   //We have found both victims, time to go home!
