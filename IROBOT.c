@@ -90,12 +90,15 @@ void IROBOT_MazeRun(void){
   TORDINATE home = {1, 3};
   TORDINATE currOrd = {1, 3};
   TORDINATE wayP1 = {2, 3};
-  TORDINATE wayP2 = {3, 3};
-  TORDINATE wayP3 = {3, 1};
-  TORDINATE wayP4 = {0, 0};
+  TORDINATE wayP2 = {3, 2};
+  TORDINATE wayP3 = {3, 3};
+  TORDINATE wayP4 = {3, 1};
+  TORDINATE wayP5 = {0, 0};
+  TORDINATE wayP6 = {2, 1};
   /* Iniitialise the list of waypoints */
-  TORDINATE wayList[4];
+  TORDINATE wayList[6];
   wayList[0] = wayP1; wayList[1] = wayP2; wayList[2] = wayP3; wayList[3] = wayP4;
+  wayList[4] = wayP5; wayList[5] = wayP6;
 
   while(!bothVicsFound && !sensTrig){
     //Loop through WayPoint List and continue to move around the maze, until
@@ -484,8 +487,9 @@ bool victimFound(void){
   rxdata = USART_InChar();
   
   //return (rxdata == 250 || rxdata == 246 || rxdata == 254);
-  //LCD_PrintInt((int)rxdata, TOP_LEFT);
-  return (rxdata == 250 || rxdata == 246 || rxdata == 254);
+  LCD_PrintInt((int)rxdata, TOP_RIGHT);
+  return(rxdata == 254 || rxdata ==246 ||rxdata==250);
+  //return (rxdata == 250 || rxdata == 246 || rxdata == 254);
 }
 
 /*! @brief Determines if all victims have been found, if not - it will perform
