@@ -110,7 +110,7 @@ bool MOVE_CheckSensor(TSENSORS * sensors){
   USART_OutChar(OP_QUERY);
   USART_OutChar(2);         //Get information about 3 sensors TODO: Implement victim
   USART_OutChar(OP_SENS_BUMP);
-  USART_OutChar(OP_SENS_WALL);
+  USART_OutChar(OP_SENS_VWALL);
   
   //1. Packet ID: 7 (Bump and Wheel drop)
   sensors->bump = (USART_InChar() & 0b00000011);   //We only care about the bump data so AND with mask
