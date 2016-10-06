@@ -29,7 +29,7 @@ int16_t MOVE_GetDistMoved(void){
 
 bool MOVE_Straight(int16_t velocity, int16_t distance, bool checkSensor, TSENSORS * sens, int16_t * movBack){
   int16_t distanceTravelled = 0;
-  bool sensorTrig = false;
+  bool sensorTrig = false; bool temp;
 
   MOVE_GetDistMoved(); //Reset distance encoders on the iRobot
   MOVE_DirectDrive(velocity, velocity); //Tell the IROBOT to drive straight at speed
@@ -43,15 +43,17 @@ bool MOVE_Straight(int16_t velocity, int16_t distance, bool checkSensor, TSENSOR
       distanceTravelled += ((int16_t) MOVE_GetDistMoved() * -1); //Negative vel returns neg dist (must normalise)
     }
     
+    temp = MOVE_CheckSensor(sens);
+    
     if(checkSensor)
-      sensorTrig = MOVE_CheckSensor(sens);
+      sensorTrig = temp;
   }
+  
+  MOVE_DirectDrive(0, 0); //Tell the IROBOT to stop moving
   
   if(sensorTrig && (distanceTravelled < distance))
     *movBack += distanceTravelled;  //If the robot got interrupted, we update how far it needs to move back
   
-  MOVE_DirectDrive(0, 0); //Tell the IROBOT to stop moving
-
   return sensorTrig;
 }
 
@@ -82,6 +84,7 @@ bool MOVE_Rotate(uint16_t velocity, uint16_t angle, TDIRECTION dir, TSENSORS * s
     }else{
       angleMoved += ((int16_t) rxdata.l * -1); //CW direction returns negative angles
     }
+    
     MOVE_CheckSensor(sens);
   }
 
