@@ -312,7 +312,7 @@ bool moveForwardFrom(TORDINATE ord, TSENSORS * sens, int16_t * movBack){
       if(triggered){
         *movBack += dist;
         if(BWall)
-          *movBack += 900;
+          *movBack += 400;
       }
     } else if (!FInNext && !triggered){
       if(LHWallF && !triggered)
@@ -337,7 +337,7 @@ bool moveForwardFrom(TORDINATE ord, TSENSORS * sens, int16_t * movBack){
       MOVE_DirectDrive(0,0); //Stop the robot
       
       if(triggered)
-        *movBack += dist + 20; //Calculate dist required to move Back
+        *movBack += dist; //Calculate dist required to move Back
     }
     else if(!FInNext && !triggered)
     {
