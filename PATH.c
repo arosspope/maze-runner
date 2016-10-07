@@ -123,6 +123,20 @@ void PATH_VirtWallFoundAt(TORDINATE ord){
   //Assume wall was found in front of robot, shift by rotation factor and assign
   uint8_t virtwall = (0b10000000) >> PATH_RotationFactor;
   Map[ord.x][ord.y] |= virtwall;
+  
+  switch(PATH_RotationFactor){
+    case 0:
+      ord.x = ord.x - 1; break;
+    case 1:
+      ord.y = ord.y + 1; break;
+    case 2:
+      ord.x = ord.x + 1; break;
+    case 3:
+      ord.y = ord.y - 1; break;
+  }
+  
+  uint8_t virtwall = (0b00100000) >> PATH_RotationFactor; //Get the wall behind
+  Map[ord.x][ord.y] |= (virtwall << 4);
 }
 
 void PATH_UpdateOrient(uint8_t num90Turns, TDIRECTION dir){

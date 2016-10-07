@@ -122,6 +122,7 @@ void IROBOT_MazeRun(void){
       }
     }
     i = (i + 1) % 6; //Make sure to move within the waypoint list
+    LCD_PrintInt(currOrd.x, BM_LEFT); LCD_PrintInt(currOrd.y, BM_RIGHT);
   }
 
   //We have found both victims, time to go home!
@@ -129,7 +130,6 @@ void IROBOT_MazeRun(void){
   PATH_Plan(currOrd, home);
   while(!(currOrd.x == home.x && currOrd.y == home.y)) //While we havent gotten to the waypoint
   {
-    LCD_PrintInt(PATH_Path[currOrd.x][currOrd.y], TOP_LEFT);
     findNextSquare(currOrd, true);
     if(moveForwardFrom(currOrd, &sens, &movBack)){
       errorHandle(currOrd, home, sens, movBack);
@@ -137,7 +137,6 @@ void IROBOT_MazeRun(void){
       updatePos(&currOrd);
     }
     movBack = 0;
-    LCD_PrintInt(currOrd.x, BM_LEFT); LCD_PrintInt(currOrd.y, BM_RIGHT);
   }
   playSong(2);
 }
