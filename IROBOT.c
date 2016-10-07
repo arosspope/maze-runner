@@ -21,8 +21,8 @@
 /* Loading Song Notes to EEPROM (pre-loading only) - TODO: Choose notes */
 //Note duration is stored next to the note:
 //  -e.g. DATA(D, 0.5s, C#, 0.2s); 'D' will play for 0.5seconds, 'C#' will play for 0.2s
-__EEPROM_DATA(71, 32, 76, 31, 79, 31, 78, 33);  //Song 0 - ADDR offset: 0x00 Harry Potter-Victim 1
-__EEPROM_DATA(76, 34, 71, 33, 69, 31, 78, 34);
+__EEPROM_DATA(72, 30, 76, 15, 78, 10, 81, 15);  //Song 0 - ADDR offset: 0x00 Harry Potter-Victim 1
+__EEPROM_DATA(79, 20, 76, 15, 71, 15, 67, 15);
 __EEPROM_DATA(72, 12, 84, 12, 57, 12, 69, 12);  //Song 1 - ADDR offset: 0x10 Victim 2
 __EEPROM_DATA(58, 12, 70, 12, 0, 6, 0, 6);
 __EEPROM_DATA(100, 10, 100, 10, 100, 10, 96, 20);          //Song 2 - ADDR offset: 0x20 Mario-Finish 
