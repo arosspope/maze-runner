@@ -129,6 +129,7 @@ void IROBOT_MazeRun(void){
   PATH_Plan(currOrd, home);
   while(!(currOrd.x == home.x && currOrd.y == home.y)) //While we havent gotten to the waypoint
   {
+    LCD_PrintInt(PATH_Path[currOrd.x][currOrd.y], TOP_LEFT);
     findNextSquare(currOrd, true);
     if(moveForwardFrom(currOrd, &sens, &movBack)){
       errorHandle(currOrd, home, sens, movBack);

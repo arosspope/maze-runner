@@ -121,7 +121,7 @@ uint8_t PATH_GetMapInfo(TORDINATE boxOrd, TBOX_INFO info){
 
 void PATH_VirtWallFoundAt(TORDINATE ord){
   //Assume wall was found in front of robot, shift by rotation factor and assign
-  uint8_t virtwall = (0b10000000 >> PATH_RotationFactor) & VWALLS;
+  uint8_t virtwall = (0b10000000) >> PATH_RotationFactor;
   Map[ord.x][ord.y] |= virtwall;
 }
 
