@@ -95,9 +95,9 @@ void IROBOT_MazeRun(void){
   TORDINATE wayP5 = {0, 0};
   TORDINATE wayP6 = {2, 1};
   /* Iniitialise the list of waypoints */
-  TORDINATE wayList[6];
+  TORDINATE wayList[7];
   wayList[0] = wayP1; wayList[1] = wayP2; wayList[2] = wayP3; wayList[3] = wayP4;
-  wayList[4] = wayP5; wayList[5] = wayP6;
+  wayList[4] = wayP5; wayList[5] = wayP6; wayList[6] = home;
 
   while(!bothVicsFound && !sensTrig){
     //Loop through WayPoint List and continue to move around the maze, until
@@ -121,7 +121,7 @@ void IROBOT_MazeRun(void){
         movBack = 0;
       }
     }
-    i = (i + 1) % 6; //Make sure to move within the waypoint list
+    i = (i + 1) % 7; //Make sure to move within the waypoint list
     LCD_PrintInt(currOrd.x, BM_LEFT); LCD_PrintInt(currOrd.y, BM_RIGHT);
   }
 
