@@ -126,7 +126,7 @@ void main(void) {
         //TODO: Test code - for maze-run
         LCD_PrintStr("WALL", TOP_LEFT); //Print the MODE
         IROBOT_MazeRun();
-        IROBOT_Test(); //TODO: Currently runs short song
+        //IROBOT_Test(); //TODO: Currently runs short song
       }
     }
   }

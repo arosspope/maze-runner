@@ -78,7 +78,6 @@ bool errorHandle(TORDINATE ord, TORDINATE wayP, TSENSORS sensor, int16_t movBack
     PATH_VirtWallFoundAt(ord);
     rc = PATH_Plan(ord, wayP);
   }
-  LCD_PrintInt(movBack, TOP_LEFT);
   
   return rc;
 }
@@ -126,7 +125,8 @@ void IROBOT_MazeRun(void){
   }
 
   //We have found both victims, time to go home!
-  PATH_Plan(currOrd, home); movBack = 0;
+  movBack = 0;
+  PATH_Plan(currOrd, home);
   while(!(currOrd.x == home.x && currOrd.y == home.y)) //While we havent gotten to the waypoint
   {
     findNextSquare(currOrd, true);
@@ -136,7 +136,9 @@ void IROBOT_MazeRun(void){
       updatePos(&currOrd);
     }
     movBack = 0;
+    LCD_PrintInt(currOrd.x, BM_LEFT); LCD_PrintInt(currOrd.y, BM_RIGHT);
   }
+  playSong(2);
 }
 
 bool IROBOT_WallFollow(TDIRECTION irDir, TSENSORS * sens, int16_t moveDist, int16_t * movBack){
@@ -482,14 +484,24 @@ void updatePos(TORDINATE *ord){
  */
 bool victimFound(void){
   uint8_t rxdata;
-  USART_OutChar(OP_SENSORS);  //Grab data about P17: Infrared data
-  USART_OutChar(OP_SENS_IR);
-  rxdata = USART_InChar();
+//  USART_OutChar(OP_SENSORS);  //Grab data about P17: Infrared data
+//  USART_OutChar(OP_SENS_IR);
+//  rxdata = USART_InChar();
   
-  //return (rxdata == 250 || rxdata == 246 || rxdata == 254);
+  do {
+    USART_OutChar(OP_SENSORS);  //Grab data about P17: Infrared data
+    USART_OutChar(OP_SENS_IR);
+    rxdata = USART_InChar();
+    __delay_ms(15);
+    USART_OutChar(OP_SENSORS);  //Grab data about P17: Infrared data
+    USART_OutChar(OP_SENS_IR);
+  } while(rxdata != USART_InChar());
+  
+  
   LCD_PrintInt((int)rxdata, TOP_RIGHT);
-  return(rxdata == 254 || rxdata ==246 ||rxdata==250);
-  //return (rxdata == 250 || rxdata == 246 || rxdata == 254);
+  return (rxdata == 250 || rxdata == 246 || rxdata == 254 || rxdata == 244 || rxdata == 248 );
+  //return(rxdata ==242);
+  //return (rxdata == 250 || rxdata == 246 || rxdata == 254 || rxdata == 242);
 }
 
 /*! @brief Determines if all victims have been found, if not - it will perform

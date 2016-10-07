@@ -45,7 +45,7 @@ bool PATH_Init(void){
 
 bool PATH_Plan(TORDINATE robotOrd, TORDINATE waypOrd){
   bool done = false;
-  uint8_t loopCount = 0;
+  uint16_t loopCount = 0;
   int8_t currentPathDistance; //How far the 'water' has flowed
   uint8_t x, y;
   
@@ -78,11 +78,11 @@ bool PATH_Plan(TORDINATE robotOrd, TORDINATE waypOrd){
     if(PATH_Path[robotOrd.x][robotOrd.y] != -1) //A Path has been found to the robot
       done = true;
     
-    if(loopCount > 254)
+    if(loopCount > 401)
       done = true;
   }
 
-  return !((loopCount > 254));  //If it looped more than 255 we can safely assume it did not find a path
+  return !((loopCount > 401));  //If it looped more than 255 we can safely assume it did not find a path
 }
 
 uint8_t PATH_GetMapInfo(TORDINATE boxOrd, TBOX_INFO info){
