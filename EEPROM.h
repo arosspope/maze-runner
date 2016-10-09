@@ -8,8 +8,6 @@
  *  @note Implementation detail for the EEPROM write and read functionality 
  *  is defined in the <xc.h> library.
  *
- *  TODO: Need to determine whether using (or not) using the function 'eeprom_write/read' will effect stack level
- *
  *  @author A.Pope
  *  @date 02-08-2016
  */

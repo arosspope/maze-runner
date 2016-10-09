@@ -4,7 +4,7 @@
  *
  *  This module is a HAL (Hardware abstraction Layer) for the SPI on the PIC.
  *  It facilitates communication between hardware and software for other modules
- *  such as SM and EEPROM.
+ *  such as SM and EEPROM (this EEPROM is on the CPLD).
  *
  *  @author Andrew.P
  *  @date 02-08-2016
@@ -18,12 +18,11 @@ extern "C" {
 
 #include "types.h"
 
-/* TSPI_MODE is used to select different SPI modes */
 typedef enum {
   SPI_NONE = 0,
   SPI_EEPROM = 2,
   SPI_SM = 3
-}TSPI_MODE;
+}TSPI_MODE; /* TSPI_MODE is used to select different SPI modes */
 
 /*!@brief Sets up the SPI interface before first use.
  *

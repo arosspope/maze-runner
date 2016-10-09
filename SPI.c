@@ -4,7 +4,7 @@
  *
  *  This module is a HAL (Hardware abstraction Layer) for the SPI on the PIC.
  *  It facilitates communication between hardware and software for other modules
- *  such as SM and EEPROM.
+ *  such as SM and EEPROM (this EEPROM is on the CPLD).
  *
  *  @author Andrew.P
  *  @date 02-08-2016
@@ -16,10 +16,11 @@ bool SPI_Init(void) {
   SSPSTATbits.SMP = 0; //Input data sampled at middle of data output time
   SSPSTATbits.CKE = 1; //Transmit occurs on transition from active to idle clock state
 
-  SSPCONbits.WCOL = 0;  //No Collision
-  SSPCONbits.SSPOV = 0; //No Overflow
-  SSPCONbits.SSPEN = 1; //Enables serial port and serial port pins
-  SSPCONbits.CKP = 0;   //Idle state for clock is a low level
+  SSPCONbits.WCOL   = 0;  //No Collision
+  SSPCONbits.SSPOV  = 0;  //No Overflow
+  SSPCONbits.SSPEN  = 1;  //Enables serial port and serial port pins
+  SSPCONbits.CKP    = 0;  //Idle state for clock is a low level
+  
   //SPI Master mode, clock Fosc/4
   SSPCONbits.SSPM3 = 0;
   SSPCONbits.SSPM2 = 0;
@@ -34,7 +35,7 @@ bool SPI_Init(void) {
   TRISCbits.TRISC4 = 1; //Input: SPI_SDI
   TRISCbits.TRISC5 = 0; //Output: SPI_SDO
   
-  SPI_SelectMode(SPI_NONE); //Select no mode initially
+  SPI_SelectMode(SPI_NONE); //Select no mode on startup
   
   return true;
 }
@@ -50,7 +51,7 @@ uint8_t SPI_SendData(uint8_t txData){
   SSPBUF = txData;    //Load data to the SSPBUF buffer
   while(SSPIF == 0);  //Wait until the transmit process has completed
 
-  rxData = SSPBUF;    //Potentially receieve data from the buffer
+  rxData = SSPBUF;    //Potentially receive data from the buffer
   SSPIF = 0;
 
   return rxData;

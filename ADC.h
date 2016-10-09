@@ -2,7 +2,7 @@
  *
  *  @brief Analog-to-Digital Converter module.
  *
- *  This contains the functions for converting analog to digital.
+ *  This contains the functions for converting analog signals to digital.
  *
  *  @author A.Pope
  *  @date 02-08-2016
@@ -17,7 +17,7 @@ extern "C" {
 
 /*! @brief Sets up the ADC before first use.
  *
- *  @return bool - TRUE if the LCD were successfully initialized.
+ *  @return bool - TRUE if the ADC was successfully initialized.
  */
 bool ADC_Init(void);
 

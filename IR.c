@@ -2,7 +2,7 @@
  *
  *  @brief Routines for the IR sensor.
  *
- *  This contains the functions for operating Infra-Red (IR) distance sensor.
+ *  This contains the functions for operating the Infra-Red (IR) distance sensor.
  *
  *  @author Andrew.P, Andrew.T
  *  @date 02-08-2016
@@ -26,7 +26,6 @@ double calcDistance(double ADCdata) {
    */
   double dist_cm = 0;
 
-  //Any ADC value greater than 510 (i.e. the dead-zone) will read as 0mm)
   if( ADCdata >= 379 && ADCdata < 510 ){  //20-30
     dist_cm = ((ADCdata-772)/-13.1); 
   } 

@@ -36,7 +36,7 @@ typedef struct
 } TORDINATE; /*< Specifies an x and y coordinate for a position on the grid */
 
 extern uint8_t PATH_RotationFactor; /*< The rotation factor of the robot in relation to the map */
-extern int8_t PATH_Path[5][4];   /*< Specifies the path between the robot and a waypoint */
+extern int8_t PATH_Path[5][4];      /*< Specifies the path between the robot and a waypoint */
 
 /*! @brief Sets up the PATH module before first use.
  *
@@ -49,7 +49,7 @@ bool PATH_Init(void);
  *  @param boxOrd - The coordinates of the box to obtain information about
  *  @param info - User can specify what information they want returned.
  *
- *  @return 8-bit number - For all info specifiers (aparat from 'BOX_All') you
+ *  @return 8-bit number - For all info specifiers (apart from 'BOX_All') you
  *                         can treat this return value as a boolean.
  */
 uint8_t PATH_GetMapInfo(TORDINATE boxOrd, TBOX_INFO info);
@@ -65,25 +65,24 @@ uint8_t PATH_GetMapInfo(TORDINATE boxOrd, TBOX_INFO info);
  */
 void PATH_UpdateOrient(uint8_t num90Turns, TDIRECTION dir);
 
-/*! @brief Calculates a path between the robot and a waypoint within the maze.
+/*! @brief Calculates a path between the robot and a way-point within the maze.
  *
  *  This function MUST be called every time the layout of the maze changes (e.g.
  *  a virtual wall is detected).
  *
  *  @param robotOrd - The current coordinates of the robot
- *  @param waypOrd  - The coordinates of the waypoint to get too.
+ *  @param waypOrd  - The coordinates of the way-point to get too.
  *
- *  @return TRUE - If successfull
+ *  @return TRUE - If a path could be found between two ordinates
  */
 bool PATH_Plan(TORDINATE robotOrd, TORDINATE waypOrd);
 
 /*! @brief Used to indicate that a virtual wall was found in the maze space. Will
  *         update Map accordingly.
  *
- *  NOTE: This function assumes the virtual wall was found in front of the robot
- *  in the maze.
- *
  *  @param ord - The coordinate where the virtual wall was found.
+ *  @note This function assumes the virtual wall was found in front of the robot
+ *  in the maze.
  */
 void PATH_VirtWallFoundAt(TORDINATE ord);
 #ifdef	__cplusplus
@@ -91,4 +90,3 @@ void PATH_VirtWallFoundAt(TORDINATE ord);
 #endif
 
 #endif	/* PATH_H */
-

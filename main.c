@@ -1,10 +1,10 @@
 /*!
  * @file main.c
- * @brief
- *         Main module.
- *         This module contains user's application code.
- *  @author A.Pope
- *  @date 02-08-2016
+ * @brief Main module.
+ *         
+ * Main entry point to the program.
+ * @author A.Pope
+ * @date 02-08-2016
  */
 #include <pic.h>
 #include <xc.h>
@@ -18,10 +18,8 @@
 
 #pragma config BOREN = OFF, CPD = OFF, WRT = OFF, FOSC = HS, WDTE = OFF, CP = OFF, LVP = OFF, PWRTE = OFF
 #define TMR0_VAL           100  //TMR0 will count from 0 to 100 in 1ms
-#define IR_DELAY           1000 //IR Distance measurement delay of 1s
 #define DEBOUNCE_DELAY     5    //Debounce delay of 5ms
 #define HEARTBEAT_DELAY    500  //Heartbeat of 500ms
-bool IR_FLAG = false;           //Used to signal the main loop when to perform a distance measurement
 
 /* The list of all buttons in the system
  * Note - Rather than using the callback, we will hardcode what happens on button
@@ -31,6 +29,9 @@ button_t buttonList[] = {
   {false, false, BNT_DEB_COUNT, 0},
 };
 
+/*! @brief Interrupt Service Routine for the PIC
+ *  @note All interrupts in the PIC must be serviced in this routine 
+ */
 void interrupt isr(void) {
   static unsigned int debCnt = 0;
   static unsigned int hbCnt = 0;
@@ -39,13 +40,7 @@ void interrupt isr(void) {
   if (INTCONbits.T0IF && INTCONbits.T0IE) {
     INTCONbits.T0IF = 0; // Clear Flag for Timer0 Interrupt
     TMR0 = TMR0_VAL;     // Reset timer 0
-    debCnt++; hbCnt++; irCnt++;
-
-    //Check if system is ready to perform another measurement
-    if (!(irCnt % IR_DELAY)) {
-      irCnt = 0;
-      IR_FLAG = true;
-    }
+    debCnt++; hbCnt++;
 
     //Check to flash 'heartbeat' LED
     if (!(hbCnt % HEARTBEAT_DELAY)) {
@@ -53,7 +48,7 @@ void interrupt isr(void) {
       LED_0 = !LED_0;
     }
 
-    //Check if buttons require debouncing
+    //Check if button require debouncing
     if (!(debCnt % DEBOUNCE_DELAY)) {
       debCnt = 0;
 
@@ -66,18 +61,18 @@ void interrupt isr(void) {
   }
 }
 
-/*! @brief Initialises Timer0 appropriately.
+/*! @brief Initializes Timer0 appropriately.
  *
- *  @returns bool - TRUE If init was successfull
+ *  @returns TRUE - If init was successful
  */
 bool timerInit(void) {
   /* We have a 20MHz Internal clock
-   * If we set timer0 prescaler to 32, it will count from 0 to 100 in 1ms
+   * If we set timer0 pre-scaler to 32, it will count from 0 to 100 in 1ms
    */
   TMR0 = TMR0_VAL;
-  OPTION_REGbits.T0CS = 0; //Ensure clock is running on Internal CLKO
-  OPTION_REGbits.PSA = 0; //Prescaler assigned to TMR0
-  OPTION_REGbits.PS2 = 1; //Set prescaler to 1:32
+  OPTION_REGbits.T0CS = 0;  //Ensure clock is running on Internal CLKO
+  OPTION_REGbits.PSA = 0;   //Pre-scaler assigned to TMR0
+  OPTION_REGbits.PS2 = 1;   //Set pre-scaler to 1:32
   OPTION_REGbits.PS1 = 0;
   OPTION_REGbits.PS0 = 0;
 
@@ -86,9 +81,9 @@ bool timerInit(void) {
   return true;
 }
 
-/*! @brief Initialises the whole system
+/*! @brief Initializes the whole system
  *
- *  @returns bool - TRUE If init was successfull
+ *  @returns TRUE If init was successful
  */
 bool systemInit(void){
   bool success;
@@ -111,22 +106,16 @@ void main(void) {
 
   if (initOk)
   {
-    ei();           //Globally Enable system wide interrupts
+    ei();           //Globally Enable system wide interrupts if init okay
     IROBOT_Start(); //Send startup codes to IROBOT
     
     while (1)
     {
-      LCD_PrintStr("REST", TOP_LEFT); //By default, the robot is in 'REST' mode
-
       //Check to see if button was pressed
       if(buttonList[0].bntPressed)
       {
         buttonList[0].bntPressed = false;
-        
-        //TODO: Test code - for maze-run
-        LCD_PrintStr("WALL", TOP_LEFT); //Print the MODE
-        IROBOT_MazeRun();
-        //IROBOT_Test(); //TODO: Currently runs short song
+        IROBOT_MazeRun(); //The robot will initiate the maze-run routine
       }
     }
   }

@@ -33,7 +33,7 @@ typedef struct
 
 /*! @brief Sets up the button module before first use.
  *
- *  @return bool - TRUE if the module was successfully initialized.
+ *  @return TRUE if the module was successfully initialized.
  */
 bool BNT_Init(void);
 

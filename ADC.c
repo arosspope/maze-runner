@@ -2,7 +2,7 @@
  *
  *  @brief Analog-to-Digital Converter module.
  *
- *  This contains the functions for converting analog to digital.
+ *  This contains the functions for converting analog signals to digital.
  *
  *  @author A.Pope
  *  @date 02-08-2016
@@ -29,9 +29,9 @@ bool ADC_Init(void) {
   ADCON1bits.PCFG1 = 1;
   ADCON1bits.PCFG0 = 0;
 
-  ADCON0bits.ADON = 1; //Power up the A/D converter
+  ADCON0bits.ADON = 1;  //Power up the A/D converter
 
-  __delay_us(50); // Delay for ADC aquisition
+  __delay_us(50);       // Delay for ADC acquisition
 
   return true;
 }
@@ -44,7 +44,7 @@ unsigned int ADC_GetVal(void) {
   GO = 1;              // Start the ADC process
   while (GO) continue; // Wait for conversion complete
 
-  /* Get the 8-bits from the ADRES registers (right-justified)*/
+  //Get the 10-bits from the ADRES registers (right-justified)
   adcRAW = (ADRESL + (ADRESH * 256));
   return (adcRAW);
 }

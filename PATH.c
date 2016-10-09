@@ -9,7 +9,6 @@
  *  @date 22-09-2016
  */
 #include "PATH.h"
-#include "LCD.h"
 
 #define VWALLS  0b11110000
 #define PWALLS  0b00001111
@@ -45,7 +44,7 @@ bool PATH_Init(void){
 
 bool PATH_Plan(TORDINATE robotOrd, TORDINATE waypOrd){
   bool done = false;
-  uint16_t loopCount = 0;
+  uint16_t loopCount = 0;     //Used to limit how many loops the function will iterate through the map to find a path
   int8_t currentPathDistance; //How far the 'water' has flowed
   uint8_t x, y;
   
@@ -56,7 +55,7 @@ bool PATH_Plan(TORDINATE robotOrd, TORDINATE waypOrd){
     }
   }
 
-  PATH_Path[waypOrd.x][waypOrd.y] = 0; //Set the waypoint to flood point 0
+  PATH_Path[waypOrd.x][waypOrd.y] = 0; //Set the way-point to flood point 0
   
   while(!done) //Begin flooding the maze until we find a path
   {
@@ -78,19 +77,20 @@ bool PATH_Plan(TORDINATE robotOrd, TORDINATE waypOrd){
     if(PATH_Path[robotOrd.x][robotOrd.y] != -1) //A Path has been found to the robot
       done = true;
     
-    if(loopCount > 401)
+    //Algorithm is allowed to loop a max of (20x20 + 1) times before deciding that a path cant be found
+    if(loopCount > 401) 
       done = true;
   }
 
-  return !((loopCount > 401));  //If it looped more than 255 we can safely assume it did not find a path
+  return !((loopCount > 401));
 }
 
 uint8_t PATH_GetMapInfo(TORDINATE boxOrd, TBOX_INFO info){
   uint8_t temp, box = 0;
   
-  if(boxOrd.x < 5 && boxOrd.y < 4)
+  if(boxOrd.x < 5 && boxOrd.y < 4) //Sanity check that the ordinate is not outside the map
   {
-    //Normailses the map direction in relation to the robot
+    //Normalizes the map direction in relation to the robot
     temp = getNormalisedBoxVal(boxOrd.x, boxOrd.y);
     //Will return the info required by the user
     switch(info)
@@ -124,6 +124,7 @@ void PATH_VirtWallFoundAt(TORDINATE ord){
   uint8_t virtwall = (0b10000000) >> PATH_RotationFactor;
   Map[ord.x][ord.y] |= virtwall;
   
+  //Make sure that this shared wall is updated as a virtual wall in the next 'sqaure'
   switch(PATH_RotationFactor){
     case 0:
       ord.x = ord.x - 1; break;
@@ -135,7 +136,8 @@ void PATH_VirtWallFoundAt(TORDINATE ord){
       ord.y = ord.y - 1; break;
   }
   
-  uint8_t virtwall = (0b00100000) >> PATH_RotationFactor; //Get the wall behind
+  //The back wall in the next square in front of the robot is updated as a virtual wall
+  virtwall = (0b00100000) >> PATH_RotationFactor;
   Map[ord.x][ord.y] |= (virtwall << 4);
 }
 
@@ -145,7 +147,7 @@ void PATH_UpdateOrient(uint8_t num90Turns, TDIRECTION dir){
   if(dir == DIR_CW){
     PATH_RotationFactor = (PATH_RotationFactor + num90Turns) % 4; //CW direction is 'positive movement'
   } else {
-    //If CCW direction, we must make sure we are moduloing within 4 states (0,1,2,3)
+    //If CCW direction, we must make sure we are modulo-ing within 4 states (0,1,2,3)
     //therefore, we must check for negative values.
     temp = PATH_RotationFactor - num90Turns;
     temp = temp % 4;
@@ -159,36 +161,36 @@ void PATH_UpdateOrient(uint8_t num90Turns, TDIRECTION dir){
   }
 }
 
-/*! @brief Normalises the wall location in relation to the robot for a
+/*! @brief Normalizes the wall location in relation to the robot for a
  *  particular square.
  *
- *  @param x - horizontal co-ordinate
- *  @param y - vertical co-ordinate
+ *  @param x - horizontal ordinate
+ *  @param y - vertical ordinate
  *
- *  @return 8-bit number - Normalised info about the box.
+ *  @return 8-bit number - Normalized info about the box.
  */
 uint8_t getNormalisedBoxVal(uint8_t x, uint8_t y){
-  /* We want to normalise the values in the map boxes that correspond to the
-   * 4 walls. To 'normalise' this value, we must bit shift the box values by the
+  /* We want to normalize the values in the map boxes that correspond to the
+   * 4 walls. To 'normalize' this value, we must bit shift the box values by the
    * amount of times the robot has rotated in the system.
    *
    * As long as the RotationFactor is either (0, 1, 2, 3) this algorithm will work.
    *
    * Example:
-   *  - Consider we have box value = 1001 1001, with RotationFactor = 3
-   *  - After normalisation, the box value = 1100 1100
+   *  - Consider we have map value = 1001 1001, with RotationFactor = 3
+   *  - After normalization, the map value = 1100 1100
    *
-   * We will use this example box value and RotationFactor
+   * We will use this example box value and RotationFactor in the below comments
    * to illustrate the algorithm.
    */
   uint8_t temp;
   uint8_t pwalls = (Map[x][y] & PWALLS);      //Eg. pwalls = 0000 1001
-  uint8_t vwalls = (Map[x][y] & VWALLS) >> 4; //Eg: vwalls = 0000 1001
+  uint8_t vwalls = (Map[x][y] & VWALLS) >> 4; //Eg. vwalls = 0000 1001
 
   vwalls = vwalls << PATH_RotationFactor;  //Eg. vwalls = 0100 1000
   temp = vwalls << 4;                      //Eg. temp = 1000 0000
   vwalls = (temp | vwalls) & VWALLS;       //Eg. ((1000 0000) | (0100 1000)) & WALL_MASK)
-                                           //    = (1100 0000) Normalised box value!
+                                           //    = (1100 0000) Normalized box value!
   //Do the same for pwalls
   pwalls = pwalls << PATH_RotationFactor; //Eg. pwalls = 0100 1000
   temp = pwalls >> 4;                     //Eg. temp = 0000 01000
@@ -200,8 +202,8 @@ uint8_t getNormalisedBoxVal(uint8_t x, uint8_t y){
 /*! @brief Finds and returns the highest 'flood' number in an accessible
  *         neighbouring cell.
  *
- *  @param x - horizontal co-ordinate of current pos
- *  @param y - vertical co-ordinate of current pos
+ *  @param x - horizontal ordinate
+ *  @param y - vertical ordinate
  *
  *  @return 8-bit number - The highest 'flood' number found
  */

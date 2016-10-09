@@ -2,7 +2,7 @@
  *
  *  @brief Routines for the IR sensor.
  *
- *  This contains the functions for operating Infra-Red (IR) distance sensor.
+ *  This contains the functions for operating the Infra-Red (IR) distance sensor.
  *
  *  @author Andrew.P, Andrew.T
  *  @date 02-08-2016
@@ -24,7 +24,6 @@ bool IR_Init(void);
 /*! @brief The IR sensor will perform a distance measurement
  *
  *  @return distance - Returns the measured distance in mm
- *  @note Assumes that LCD_Init has been called.
  */
 double IR_Measure(void);
 #ifdef	__cplusplus

@@ -16,22 +16,11 @@ extern "C" {
 #endif
     
 #include "types.h"
-
-typedef union
-{
-  uint8_t sensors;		/*!< The status bits accessed as a byte. */
-  struct
-  {
-    uint8_t bump     : 1;	/*!< The bump status bit. */
-    uint8_t wall     : 1;	/*!< The wall status bit. */
-    uint8_t victim   : 1;	/*!< The victim status bit. */
-  } sensBits;
-} SensorsStatus_t;   
-
+ 
 typedef struct {
     bool bump;      /*!< The bump status bit. */
-    bool wall;      /*!< The wall status bit. */
-} TSENSORS;
+    bool wall;      /*!< The virtual wall status bit. */
+} TSENSORS;         /*!< Sensor information for bump and virtual walls */
 
 /*! @brief Sets up the move module before first use
  *
@@ -44,7 +33,7 @@ bool MOVE_Init(void);
  * @param velocity - The velocity to turn at (positive value only).
  * @param angle - Angle to rotate through in specified direction.
  * @param dir - The direction to rotate
- * @param sensors - A struct of booleans to indicate which sensor was tripped
+ * @param sens - A struct of booleans to indicate which sensor was potentially tripped
  *
  * @return bool - True if movement was interrupted by sensor
  */
@@ -53,8 +42,10 @@ bool MOVE_Rotate(uint16_t velocity, uint16_t angle, TDIRECTION dir, TSENSORS * s
 /*! @brief Drive the robot in a straight line.
  *
  *  @param velocity - Speed at which the robot can move (-500 - 500 mm/s)
- *  @param distance - distance that the robot must travel.
- *  @param sens - A struct of booleans to indicate which sensor was tripped
+ *  @param distance - distance that the robot must travel
+ *  @param checkSensor - TRUE if the user wants this function to be interrupted by sensors
+ *  @param sens - A struct of booleans to indicate which sensor was potentially tripped
+ *  @param movBack - A pointer to a variable that holds how far the robot moved before it was interrupted
  * 
  *  @return bool - True if movement was interrupted by a sensor
  */

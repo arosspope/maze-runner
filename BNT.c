@@ -22,7 +22,7 @@ void BNT_Debounce(button_t *button) {
    * 
    * If it has reached zero, it means that it has yet to be reset, and that the
    * user is still holding the button down. (we do not want to continuing asserting
-   * bnt pressed in this case)
+   * bntPressed in this case)
    */
   if (button->bntDebounceCnt != 0) {
     //Decrement the Debounce counter

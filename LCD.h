@@ -16,19 +16,19 @@ extern "C" {
 #include "types.h"
 
 typedef enum {
-    TOP_LEFT    = 0x00,
-    TOP_RIGHT   = 0x08,
-    BM_LEFT     = 0x40,
-    BM_RIGHT    = 0x48
+  TOP_LEFT    = 0x00,
+  TOP_RIGHT   = 0x08,
+  BM_LEFT     = 0x40,
+  BM_RIGHT    = 0x48
 }TSCREEN_AREA; /* Defines positions on the LCD screen */    
 
 /*! @brief Sets up the LCD before first use.
  *
- *  @return bool - TRUE if the LCD were successfully initialized.
+ *  @return bool - TRUE if the LCD was successfully initialized.
  */
 bool LCD_Init(void);
 
-/*! @brief Prints a string at a certain position on the LCD.
+/*! @brief Prints an Int at a certain position on the LCD.
  *
  *  @param data - The int to print
  *  @param area - The area to put the string in.

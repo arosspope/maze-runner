@@ -16,7 +16,6 @@ extern "C" {
 #endif
 
 #include "types.h"
-#include "MOVE.h"
 
 /*! @brief Sets up the iRobot before first use.
  *
@@ -31,19 +30,10 @@ bool IROBOT_Init(void);
  */
 void IROBOT_Start(void);
 
-/*! @brief Perform a Wall-follow (left hand-side only)
- *
- *  @param irDir - Which way to face the direction of ir sensor (for left or right follow)
- *  @param moveDist - How far the robot should wall follow until it needs to stop (mm)
- *  @param sensor - A struct to hold information about sensors
- * 
- *  @return bool - TRUE if interrupted by sensor
+/*! @brief Initiates the IROBOT maze-run.
+ *  
+ *  @note Assumes the robot is placed at position (1,3)
  */
-bool IROBOT_WallFollow(TDIRECTION irDir, TSENSORS * sens, int16_t moveDist, int16_t * movBack);
-
-//TODO: Must remove
-void IROBOT_Test(void);
-
 void IROBOT_MazeRun(void);
 #ifdef	__cplusplus
 }
