@@ -22,11 +22,11 @@
 #define P_LEFT  0b00000001
 
 /* Private Function prototypes */
-uint8_t getNormalisedBoxVal(uint8_t x, uint8_t y);
-int8_t highestNeighbourCell(uint8_t x, uint8_t y);
+static uint8_t getNormalisedBoxVal(uint8_t x, uint8_t y);
+static int8_t highestNeighbourCell(uint8_t x, uint8_t y);
 /* End prototypes */
 
-uint8_t PATH_RotationFactor;
+uint8_t rotationFactor;
 static uint8_t Map[5][4] = {  /*< Digital map of the maze space */
   {0b10111011, 0b11001100, 0b10011001, 0b11001100},
   {0b10011001, 0b01100110, 0b01010101, 0b01110111},
@@ -38,7 +38,7 @@ static uint8_t Map[5][4] = {  /*< Digital map of the maze space */
 int8_t PATH_Path[5][4]; /*< Path between two waypoints using flood fill method */
 
 bool PATH_Init(void){
-  PATH_RotationFactor = 0;
+  rotationFactor = 0;
   return true;
 }
 
@@ -121,23 +121,13 @@ uint8_t PATH_GetMapInfo(TORDINATE boxOrd, TBOX_INFO info){
 
 void PATH_VirtWallFoundAt(TORDINATE ord){
   //Assume wall was found in front of robot, shift by rotation factor and assign
-  uint8_t virtwall = (0b10000000) >> PATH_RotationFactor;
+  uint8_t virtwall = (0b10000000) >> rotationFactor;
   Map[ord.x][ord.y] |= virtwall;
-  
-  //Make sure that this shared wall is updated as a virtual wall in the next 'sqaure'
-  switch(PATH_RotationFactor){
-    case 0:
-      ord.x = ord.x - 1; break;
-    case 1:
-      ord.y = ord.y + 1; break;
-    case 2:
-      ord.x = ord.x + 1; break;
-    case 3:
-      ord.y = ord.y - 1; break;
-  }
+
+  PATH_UpdateCoordinate(&ord); //Make sure that this shared wall is updated as a virtual wall in the next 'sqaure'
   
   //The back wall in the next square in front of the robot is updated as a virtual wall
-  virtwall = (0b00100000) >> PATH_RotationFactor;
+  virtwall = (0b00100000) >> rotationFactor;
   Map[ord.x][ord.y] |= (virtwall << 4);
 }
 
@@ -145,11 +135,11 @@ void PATH_UpdateOrient(uint8_t num90Turns, TDIRECTION dir){
   int8_t temp;
 
   if(dir == DIR_CW){
-    PATH_RotationFactor = (PATH_RotationFactor + num90Turns) % 4; //CW direction is 'positive movement'
+    rotationFactor = (rotationFactor + num90Turns) % 4; //CW direction is 'positive movement'
   } else {
     //If CCW direction, we must make sure we are modulo-ing within 4 states (0,1,2,3)
     //therefore, we must check for negative values.
-    temp = PATH_RotationFactor - num90Turns;
+    temp = rotationFactor - num90Turns;
     temp = temp % 4;
 
     if (temp < 0)
@@ -157,7 +147,20 @@ void PATH_UpdateOrient(uint8_t num90Turns, TDIRECTION dir){
       temp += 4;
     }
     
-    PATH_RotationFactor = temp;
+    rotationFactor = temp;
+  }
+}
+
+void PATH_UpdateCoordinate(TORDINATE * ord){
+  switch(rotationFactor){
+    case 0:
+      ord->x = ord->x - 1; break;
+    case 1:
+      ord->y = ord->y + 1; break;
+    case 2:
+      ord->x = ord->x + 1; break;
+    case 3:
+      ord->y = ord->y - 1; break;
   }
 }
 
@@ -169,7 +172,7 @@ void PATH_UpdateOrient(uint8_t num90Turns, TDIRECTION dir){
  *
  *  @return 8-bit number - Normalized info about the box.
  */
-uint8_t getNormalisedBoxVal(uint8_t x, uint8_t y){
+static uint8_t getNormalisedBoxVal(uint8_t x, uint8_t y){
   /* We want to normalize the values in the map boxes that correspond to the
    * 4 walls. To 'normalize' this value, we must bit shift the box values by the
    * amount of times the robot has rotated in the system.
@@ -187,12 +190,12 @@ uint8_t getNormalisedBoxVal(uint8_t x, uint8_t y){
   uint8_t pwalls = (Map[x][y] & PWALLS);      //Eg. pwalls = 0000 1001
   uint8_t vwalls = (Map[x][y] & VWALLS) >> 4; //Eg. vwalls = 0000 1001
 
-  vwalls = vwalls << PATH_RotationFactor;  //Eg. vwalls = 0100 1000
+  vwalls = vwalls << rotationFactor;  //Eg. vwalls = 0100 1000
   temp = vwalls << 4;                      //Eg. temp = 1000 0000
   vwalls = (temp | vwalls) & VWALLS;       //Eg. ((1000 0000) | (0100 1000)) & WALL_MASK)
                                            //    = (1100 0000) Normalized box value!
   //Do the same for pwalls
-  pwalls = pwalls << PATH_RotationFactor; //Eg. pwalls = 0100 1000
+  pwalls = pwalls << rotationFactor; //Eg. pwalls = 0100 1000
   temp = pwalls >> 4;                     //Eg. temp = 0000 01000
   pwalls = (temp | pwalls) & PWALLS;      //Eg. pwalls = 0000 1100
 
@@ -207,7 +210,7 @@ uint8_t getNormalisedBoxVal(uint8_t x, uint8_t y){
  *
  *  @return 8-bit number - The highest 'flood' number found
  */
-int8_t highestNeighbourCell(uint8_t x, uint8_t y){
+static int8_t highestNeighbourCell(uint8_t x, uint8_t y){
   int8_t highestVal = -1;
   int8_t valAtNext;
 

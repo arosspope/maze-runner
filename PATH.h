@@ -35,7 +35,6 @@ typedef struct
   uint8_t y;
 } TORDINATE; /*< Specifies an x and y coordinate for a position on the grid */
 
-extern uint8_t PATH_RotationFactor; /*< The rotation factor of the robot in relation to the map */
 extern int8_t PATH_Path[5][4];      /*< Specifies the path between the robot and a waypoint */
 
 /*! @brief Sets up the PATH module before first use.
@@ -85,6 +84,13 @@ bool PATH_Plan(TORDINATE robotOrd, TORDINATE waypOrd);
  *  in the maze.
  */
 void PATH_VirtWallFoundAt(TORDINATE ord);
+
+/*! @brief Using the map's rotation factor, this function will advance an ordinate
+ *         into the next square 'forward'.
+ *
+ *  @param ord - A pointer to the coordinate to update
+ */
+void PATH_UpdateCoordinate(TORDINATE * ord);
 #ifdef	__cplusplus
 }
 #endif

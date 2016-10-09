@@ -43,7 +43,6 @@ static void resetIRPos(void);
 static void loadSongs(void);
 static void playSong(uint8_t songNo);
 static bool moveForwardFrom(TORDINATE ord, TSENSORS * sens, int16_t * movBack);
-static void updatePos(TORDINATE *ord);
 static bool findNextSquare(TORDINATE currOrd, bool doRotate);
 static int16_t getNextPathVal(TORDINATE currOrd);
 static bool areAllVictimsFound(TORDINATE curr);
@@ -104,7 +103,7 @@ void IROBOT_MazeRun(void){
         } 
         else 
         {
-          updatePos(&currOrd); //Everything was fine, update position
+          PATH_UpdateCoordinate(&currOrd); //Everything was fine, update position
         }
         movBack = 0;
       }
@@ -123,7 +122,7 @@ void IROBOT_MazeRun(void){
     if(moveForwardFrom(currOrd, &sens, &movBack)){
       errorHandle(currOrd, home, sens, movBack);
     } else {
-      updatePos(&currOrd);
+      PATH_UpdateCoordinate(&currOrd);
     }
     movBack = 0;
   }
@@ -140,7 +139,7 @@ void IROBOT_MazeRun(void){
  *  @return TRUE - In most cases. Will return FALSE if a new path can't be calculated between
  *                 the robot and the way-point (path only re-calculated when encountering a virtual wall).
  */
-bool errorHandle(TORDINATE ord, TORDINATE wayP, TSENSORS sensor, int16_t movBack){
+static bool errorHandle(TORDINATE ord, TORDINATE wayP, TSENSORS sensor, int16_t movBack){
   bool rc = true;
   
   if(sensor.bump){
@@ -148,7 +147,7 @@ bool errorHandle(TORDINATE ord, TORDINATE wayP, TSENSORS sensor, int16_t movBack
   }
   
   if(sensor.wall){
-    MOVE_Straight(-180, movBack, false, 0, 0); //For virtual wall, we need to move back and calculate path
+    MOVE_Straight(-180, movBack, false, 0, 0); //For virtual wall, we need to move back and re-calculate path
     PATH_VirtWallFoundAt(ord);
     rc = PATH_Plan(ord, wayP);
   }
@@ -165,7 +164,7 @@ bool errorHandle(TORDINATE ord, TORDINATE wayP, TSENSORS sensor, int16_t movBack
  * 
  *  @return bool - TRUE if interrupted by a sensor
  */
-bool wallFollow(TDIRECTION irDir, TSENSORS * sens, int16_t moveDist, int16_t * movBack){
+static bool wallFollow(TDIRECTION irDir, TSENSORS * sens, int16_t moveDist, int16_t * movBack){
   double tolerance = 700; //Ensure we stay 700mm from the wall
   bool triggered = false; int16_t distmoved = 0; double dist;
   uint16_t orientation = SM_Move(0, DIR_CW);
@@ -236,13 +235,13 @@ bool wallFollow(TDIRECTION irDir, TSENSORS * sens, int16_t moveDist, int16_t * m
  *  @note Assumes the robot has already been rotated to move into the next 
  *        grid location.
  */
-bool moveForwardFrom(TORDINATE ord, TSENSORS * sens, int16_t * movBack){
+static bool moveForwardFrom(TORDINATE ord, TSENSORS * sens, int16_t * movBack){
   bool triggered = false; double ir; int temp; int dist = 0;
   bool LWallF, RWallF, LHWallF, RHWallF, FInNext, BWall;
   TORDINATE nextOrd = ord;
   
   //Calculates the next grid position based on what way the robot is facing
-  updatePos(&nextOrd);
+  PATH_UpdateCoordinate(&nextOrd);
   //Get case information, to decide how to move forward
   LWallF  = PATH_GetMapInfo(ord, BOX_PLeft) && PATH_GetMapInfo(nextOrd, BOX_PLeft);
   RWallF  = PATH_GetMapInfo(ord, BOX_PRight) && PATH_GetMapInfo(nextOrd, BOX_PRight);
@@ -256,9 +255,9 @@ bool moveForwardFrom(TORDINATE ord, TSENSORS * sens, int16_t * movBack){
     if(FInNext && !triggered)
     {
       if(LWallF)  //First do a left/right wall follow for 500mm
-        triggered = IROBOT_WallFollow(DIR_CCW, sens, 500, movBack);
+        triggered = wallFollow(DIR_CCW, sens, 500, movBack);
       else
-        triggered = IROBOT_WallFollow(DIR_CW, sens, 500, movBack);
+        triggered = wallFollow(DIR_CW, sens, 500, movBack);
       
       if(!triggered) //If not triggered, do a front wall follow until within 500mm
       {
@@ -295,16 +294,16 @@ bool moveForwardFrom(TORDINATE ord, TSENSORS * sens, int16_t * movBack){
       
       //Do a wall follow the rest of the way (600mm)
       if(LWallF && !triggered)
-        triggered = IROBOT_WallFollow(DIR_CCW, sens, 600, movBack);
+        triggered = wallFollow(DIR_CCW, sens, 600, movBack);
       else if(RWallF && !triggered)
-        triggered = IROBOT_WallFollow(DIR_CW, sens, 600, movBack);
+        triggered = wallFollow(DIR_CW, sens, 600, movBack);
     }
     else if(!BWall && !FInNext && !triggered){
       //If no back-wall or front-wall - then wall follow for the full 1m
       if(LWallF)
-        triggered = IROBOT_WallFollow(DIR_CCW, sens, 1000, movBack);
+        triggered = wallFollow(DIR_CCW, sens, 1000, movBack);
       else
-        triggered = IROBOT_WallFollow(DIR_CW, sens, 1000, movBack);
+        triggered = wallFollow(DIR_CW, sens, 1000, movBack);
     }
   } 
   else if(LHWallF || RHWallF) //If we can follow a wall for half-the way
@@ -348,9 +347,9 @@ bool moveForwardFrom(TORDINATE ord, TSENSORS * sens, int16_t * movBack){
     } else if (!FInNext && !triggered){
       //Wall-follow the rest of the way
       if(LHWallF && !triggered)
-        triggered = IROBOT_WallFollow(DIR_CCW, sens, 600, movBack);
+        triggered = wallFollow(DIR_CCW, sens, 600, movBack);
       else if(RHWallF && !triggered)
-        triggered = IROBOT_WallFollow(DIR_CW, sens, 600, movBack);
+        triggered = wallFollow(DIR_CW, sens, 600, movBack);
     }
   }
   else  //Nothing to wall follow off
@@ -386,19 +385,9 @@ bool moveForwardFrom(TORDINATE ord, TSENSORS * sens, int16_t * movBack){
  *  @param currOrd - The current virtual position of the robot. 
  *  @return Flood fill value of the square in front of the robot
  */
-int16_t getNextPathVal(TORDINATE currOrd){
-  switch(PATH_RotationFactor){
-    case 0:
-      currOrd.x = currOrd.x - 1; break;
-    case 1:
-      currOrd.y = currOrd.y + 1; break;
-    case 2:
-      currOrd.x = currOrd.x + 1; break;
-    case 3:
-      currOrd.y = currOrd.y - 1; break;
-  }
-
-  return PATH_Path[currOrd.x][currOrd.y];
+static int16_t getNextPathVal(TORDINATE currOrd){
+  PATH_UpdateCoordinate(&currOrd); //Virtually move the robot forward
+  return PATH_Path[currOrd.x][currOrd.y]; //Get flood-fill value at next square
 }
 
 /*! @brief Finds the next square to move into (based on flood fill) and orient
@@ -408,7 +397,7 @@ int16_t getNextPathVal(TORDINATE currOrd){
  *  @param doRotate - Indiactes whether or not we want the robot to rotate to face the next lowest sqaure
  *  @return TRUE - If it could find a lower square on the path
  */
-bool findNextSquare(TORDINATE currOrd, bool doRotate){
+static bool findNextSquare(TORDINATE currOrd, bool doRotate){
   uint8_t lowestWall = 0; /* Indicates where the lowest wall was found */
   int16_t lowestSoFar = PATH_Path[currOrd.x][currOrd.y];
   TSENSORS sens;
@@ -493,47 +482,27 @@ static void resetIRPos(void){
   }
 }
 
-/*! @brief Updates the coordinate position based on the robots forward facing direction.
- *   
- *  @param ord - The ordinate to update
- */
-void updatePos(TORDINATE *ord){
-  switch(PATH_RotationFactor){
-    case 0:
-      ord->x = ord->x - 1; break;
-    case 1:
-      ord->y = ord->y + 1; break;
-    case 2:
-      ord->x = ord->x + 1; break;
-    case 3:
-      ord->y = ord->y - 1; break;
-  }
-}
-
 /*! @brief Attempts to find a victim at the robots current position.
  *
  *  @return TRUE - If a victim was found
  */
-bool victimFound(void){
+static bool victimFound(void){
   uint8_t rxdata;
-//  USART_OutChar(OP_SENSORS);  //Grab data about P17: Infrared data
-//  USART_OutChar(OP_SENS_IR);
-//  rxdata = USART_InChar();
-  
+
+  /* Keep getting data about Packet 17 (Infared Byte), until two consecutive
+   * reads (15ms apart) return the same value.
+   */
   do {
-    USART_OutChar(OP_SENSORS);  //Grab data about P17: Infrared data
+    USART_OutChar(OP_SENSORS);
     USART_OutChar(OP_SENS_IR);
     rxdata = USART_InChar();
     __delay_ms(15);
-    USART_OutChar(OP_SENSORS);  //Grab data about P17: Infrared data
+    USART_OutChar(OP_SENSORS);
     USART_OutChar(OP_SENS_IR);
   } while(rxdata != USART_InChar());
-  
-  
-  LCD_PrintInt((int)rxdata, TOP_RIGHT);
+
+  //Infrared ranges we are checking: Red-Buoy + ForceField, Green-Buoy + FF, RB + GB + FF, GB, RB
   return (rxdata == 250 || rxdata == 246 || rxdata == 254 || rxdata == 244 || rxdata == 248 );
-  //return(rxdata ==242);
-  //return (rxdata == 250 || rxdata == 246 || rxdata == 254 || rxdata == 242);
 }
 
 /*! @brief Determines if all victims have been found, if not - it will perform
@@ -542,7 +511,7 @@ bool victimFound(void){
  *  @param curr - The current position of the robot
  *  @return TRUE - If both victims were found.
  */
-bool areAllVictimsFound(TORDINATE curr){
+static bool areAllVictimsFound(TORDINATE curr){
   //Set initial victim locations to a unreasonable location, to indacte not found
   static TORDINATE vic1 = {255, 255};
   static TORDINATE vic2 = {255, 255};
@@ -566,6 +535,7 @@ bool areAllVictimsFound(TORDINATE curr){
   
   return bothVicsFound;
 }
+
 /*! @brief Loads the 4 pre-defined songs onto the iRobot
  *
  */

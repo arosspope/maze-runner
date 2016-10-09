@@ -20,7 +20,7 @@ bool IR_Init(void) {
  *  @param ADCdata - The raw ADC data to convert
  *  @return distance - The distance in mm
  */
-double calcDistance(double ADCdata) {
+static double calcDistance(double ADCdata) {
   /* The following uses ranges of raw ADC data, to select the most 'accurate'
    * distance conversion equation.
    */

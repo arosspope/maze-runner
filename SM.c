@@ -28,7 +28,7 @@ bool SM_Init(void) {
  *  @param a - The step value to convert
  *  @return step - The normalized step orientation within the 360 deg circle.
  */
-uint16_t calcOrientation(int a)
+static uint16_t calcOrientation(int a)
 {
   int b = (SM_F_STEPS_FOR_180 * 2); //Get the amount of steps for 360 degs
 

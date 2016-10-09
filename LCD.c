@@ -22,7 +22,7 @@
  *
  *  @param databyte - The control sequence to send.
  */
-void writeControl(unsigned char databyte) {
+static void writeControl(unsigned char databyte) {
   EN = 0;
   RW = 0;
   RS = 0; //Set control bits
@@ -37,7 +37,7 @@ void writeControl(unsigned char databyte) {
  *
  *  @param c - The character to write.
  */
-void writeChar(unsigned char c) {
+static void writeChar(unsigned char c) {
   EN = 0;
   RW = 0;
   RS = 1;
@@ -52,7 +52,7 @@ void writeChar(unsigned char c) {
  *
  *  @param address - The address to move the cursor too.
  */
-void setCursor(unsigned char address) {
+static void setCursor(unsigned char address) {
   address |= 0b10000000; //format address command using mask
   writeControl(address); //write address command
 }
