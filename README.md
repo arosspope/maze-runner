@@ -28,6 +28,19 @@ include:
 
 ## Software
 
+The [software architecture](sys-arch.JPG) of the project was designed with modularity in mind.
+All modules present within the system are defined as follows:
++ BNT: Concerned with controlling buttons within the system (this includes debouncing)
++ LED: Controls Light Emitting Diodes
++ SPI: Defines an interface to the SPI available on the PIC
++ ADC: Defines an interface to the Analog to Digital Converter on the PIC
++ USART: Defines an interface for serial communication (key method of communication between the iRobot and the PIC)
++ SM: Interface for Stepper Motor movement
++ IR: Interface for obtaining distance measurements from the IR sensor
++ PATH: Module dedicated to calculating paths between waypoints in the maze, and tracking the robot's movement
++ MOVE: Interface for robot movement (driving, rotating, checking sensors)
++ IROBOT: Module dedicated for maze exploration and navigation
+
 ## Building the project
 
 This project is best compiled using:
