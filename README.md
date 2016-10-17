@@ -14,7 +14,8 @@ shortest path back.
 + Avoid walls and respond appropriately to virtual walls while carrying out the tasks required
 for each mission.
 
-A top down representation of the maze space can be viewed [here](maze.png).
+A top down representation of the maze space can be viewed [here](maze.png). A video
+demonstration of the robot traversing the maze can be found [here](https://youtu.be/6FYnI7x7weY).
 
 ## Hardware
 
