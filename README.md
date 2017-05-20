@@ -47,3 +47,11 @@ All modules present within the system are defined as follows:
 This project is best compiled using:
 + [MPLAB X IDE](http://www.microchip.com/mplab/mplab-x-ide)
 + [XC8 Pro-Compiler](http://www.microchip.com/mplab/compilers)
+
+### Contributors
++ [Pope. A](https://github.com/andrewpo456)
++ [Truong. A](https://github.com/TruongAndrew)
++ [Stewart. C](https://github.com/corstew)
++ Lynch. J
++ Leone. K
++ Samios. L
