@@ -49,9 +49,9 @@ This project is best compiled using:
 + [XC8 Pro-Compiler](http://www.microchip.com/mplab/compilers)
 
 ### Contributors
-+ [Pope. A](https://github.com/andrewpo456)
-+ [Truong. A](https://github.com/TruongAndrew)
-+ [Stewart. C](https://github.com/corstew)
++ Pope. A ([@arosspope](https://github.com/andrewpo456)) 
++ Truong. A ([@TruongAndrew](https://github.com/TruongAndrew))
++ Stewart. C ([@corstew](https://github.com/corstew))
 + Lynch. J
 + Leone. K
 + Samios. L
