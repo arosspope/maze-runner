@@ -15,7 +15,9 @@ shortest path back.
 for each mission.
 
 A top down representation of the maze space can be viewed [here](maze.png). A video
-demonstration of the robot traversing the maze can be found [here](https://youtu.be/6FYnI7x7weY).
+demonstration of the robot traversing the maze can be found here:
+
+[![maze-runner](http://img.youtube.com/vi/6FYnI7x7weY/0.jpg)](http://www.youtube.com/watch?v=6FYnI7x7weY)
 
 ## Hardware
 
