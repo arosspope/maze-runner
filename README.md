@@ -54,6 +54,6 @@ This project is best compiled using:
 + Pope. A ([@arosspope](https://github.com/andrewpo456)) 
 + Truong. A ([@TruongAndrew](https://github.com/TruongAndrew))
 + Stewart. C ([@corstew](https://github.com/corstew))
++ Leone. K ([@kateleone](https://github.com/kateleone))
 + Lynch. J
-+ Leone. K
 + Samios. L
